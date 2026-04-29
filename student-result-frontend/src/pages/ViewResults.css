@@ -1,0 +1,63 @@
+.results-container {
+  padding: 30px;
+  background: #eef2f7;
+  min-height: 100vh;
+  font-family: "Segoe UI", sans-serif;
+}
+
+.title {
+  text-align: center;
+  margin-bottom: 25px;
+  color: #222;
+}
+
+.card {
+  background: #fff;
+  padding: 25px;
+  border-radius: 12px;
+  box-shadow: 0 6px 18px rgba(0,0,0,0.1);
+}
+
+.styled-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.styled-table thead {
+  background: #2c3e50;
+  color: white;
+}
+
+.styled-table th, 
+.styled-table td {
+  padding: 14px;
+  text-align: center;
+}
+
+.styled-table tbody tr {
+  border-bottom: 1px solid #ddd;
+  transition: 0.2s;
+}
+
+.styled-table tbody tr:hover {
+  background: #f5f7fa;
+}
+
+/* Grade styles */
+.grade {
+  padding: 6px 12px;
+  border-radius: 8px;
+  color: white;
+  font-weight: bold;
+}
+
+.grade.A { background: #27ae60; }
+.grade.B { background: #2980b9; }
+.grade.C { background: #f39c12; }
+.grade.D { background: #e74c3c; }
+
+.empty {
+  text-align: center;
+  font-size: 18px;
+  color: gray;
+}

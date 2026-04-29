@@ -1,0 +1,15 @@
+.action-card {
+  cursor: pointer;
+  border-radius: 12px;
+  transition: all 0.3s ease;
+}
+
+.action-card:hover {
+  transform: translateY(-5px);
+  background: #2563eb;
+  color: white;
+}
+
+.action-card p {
+  font-size: 14px;
+}

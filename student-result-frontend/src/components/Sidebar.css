@@ -1,0 +1,35 @@
+.sidebar {
+  width: 220px;
+  height: 100vh;
+  background: #111827;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.sidebar .logo {
+  color: white;
+  margin-bottom: 20px;
+}
+
+/* default link */
+.sidebar a {
+  color: #cbd5e1;
+  text-decoration: none;
+  padding: 10px;
+  border-radius: 8px;
+  transition: 0.3s;
+}
+
+/* hover effect */
+.sidebar a:hover {
+  background: #1f2937;
+  color: white;
+}
+
+/* ACTIVE LINK (this is the key part) */
+.sidebar a.active {
+  background: #2563eb;
+  color: white;
+}
