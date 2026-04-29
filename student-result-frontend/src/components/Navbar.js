@@ -19,7 +19,6 @@ import { useContext, useMemo, useState } from "react";
 import { ColorModeContext } from "../theme/ThemeProviderWrapper";
 
 function Navbar() {
-  const location = useLocation();
   const navigate = useNavigate();
   const theme = useTheme();
   const { toggleColorMode } = useContext(ColorModeContext);
