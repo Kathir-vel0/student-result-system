@@ -1,0 +1,22 @@
+## Node / React
+node_modules/
+student-result-frontend/node_modules/
+student-result-frontend/build/
+
+## Spring Boot / Java
+target/
+
+## Environment / Secrets
+.env
+.env.*
+application.properties
+application.yml
+application-*.properties
+application-*.yml
+
+## IDE / OS
+.idea/
+.vscode/
+*.log
+.DS_Store
+
