@@ -29,16 +29,9 @@ function Navbar() {
   const role = localStorage.getItem("role");
   const avatarInitial = role ? role[0] : "A";
 
-  const title =
-    location.pathname === "/admin" ||
-    location.pathname.startsWith("/add-") ||
-    location.pathname.startsWith("/view-")
-      ? "Admin"
-      : location.pathname.startsWith("/teacher")
-      ? "Teacher"
-      : location.pathname.startsWith("/student") || location.pathname === "/result"
-      ? "Student"
-      : "Dashboard";
+  const title = role 
+    ? role.charAt(0).toUpperCase() + role.slice(1).toLowerCase()
+    : "Dashboard";
 
   const notifications = useMemo(
     () => [

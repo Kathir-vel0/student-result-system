@@ -1,24 +1,55 @@
 import React, { useEffect, useState } from "react";
-import axios from "axios";
+import API from "../api/api";
 import Box from "@mui/material/Box";
 import Paper from "@mui/material/Paper";
 import Typography from "@mui/material/Typography";
 import Grid from "@mui/material/Grid";
 import Avatar from "@mui/material/Avatar";
+import CircularProgress from "@mui/material/CircularProgress";
 
 function ViewProfile() {
   const [student, setStudent] = useState(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const studentId = localStorage.getItem("userId");
-
-    axios
-      .get(`http://localhost:8080/api/students/${studentId}`)
-      .then((res) => setStudent(res.data))
-      .catch((err) => console.error(err));
+    const userId = localStorage.getItem("userId");
+    
+    setLoading(true);
+    API.get(`/students/user/${userId}`)
+      .then((res) => {
+        setStudent(res.data);
+      })
+      .catch((err) => {
+        console.error(err);
+        setStudent(null);
+      })
+      .finally(() => {
+        setLoading(false);
+      });
   }, []);
 
-  if (!student) return <h2>Loading...</h2>;
+  if (loading) {
+    return (
+      <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '60vh' }}>
+        <CircularProgress />
+      </Box>
+    );
+  }
+
+  if (!student) {
+    return (
+      <Box>
+        <Paper sx={{ p: 4, borderRadius: 4, textAlign: 'center' }}>
+          <Typography variant="h5" sx={{ fontWeight: 800, mb: 2, color: 'text.secondary' }}>
+            Profile Not Found
+          </Typography>
+          <Typography color="text.secondary">
+            Your student profile details could not be retrieved. Please contact the administrator.
+          </Typography>
+        </Paper>
+      </Box>
+    );
+  }
 
   return (
     <Box>
