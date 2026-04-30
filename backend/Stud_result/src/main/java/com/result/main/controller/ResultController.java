@@ -52,6 +52,10 @@ public class ResultController {
     private String fromEmail;
     @Value("${spring.mail.password:}")
     private String mailPassword;
+    @Value("${spring.mail.host:}")
+    private String mailHost;
+    @Value("${spring.mail.port:}")
+    private String mailPort;
 
     // ADD (TEACHER)
  // ADD (TEACHER) using StudentId & SubjectCode
@@ -232,12 +236,18 @@ public class ResultController {
         Map<String, Object> resp = new HashMap<>();
         boolean hasUsername = fromEmail != null && !fromEmail.trim().isEmpty();
         boolean hasPassword = mailPassword != null && !mailPassword.trim().isEmpty();
+        boolean hasHost = mailHost != null && !mailHost.trim().isEmpty();
+        boolean hasPort = mailPort != null && !mailPort.trim().isEmpty();
         resp.put("mailUsernameConfigured", hasUsername);
         resp.put("mailPasswordConfigured", hasPassword);
+        resp.put("mailHostConfigured", hasHost);
+        resp.put("mailPortConfigured", hasPort);
         resp.put("mailFrom", hasUsername ? fromEmail : "");
-        resp.put("message", hasUsername && hasPassword
-                ? "Mail credentials look configured."
-                : "Mail credentials missing. Set SPRING_MAIL_USERNAME and SPRING_MAIL_PASSWORD in Render env.");
+        resp.put("mailHost", hasHost ? mailHost : "");
+        resp.put("mailPort", hasPort ? mailPort : "");
+        resp.put("message", hasUsername && hasPassword && hasHost && hasPort
+                ? "Mail settings look configured."
+                : "Mail settings missing. Set SPRING_MAIL_HOST, SPRING_MAIL_PORT, SPRING_MAIL_USERNAME and SPRING_MAIL_PASSWORD in Render env.");
         return resp;
     }
 
