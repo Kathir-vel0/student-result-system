@@ -38,6 +38,7 @@ function ViewResults() {
   // Publish dialog state
   const [publishOpen, setPublishOpen] = useState(false);
   const [publishing, setPublishing] = useState(false);
+  const [publishError, setPublishError] = useState("");
 
   useEffect(() => {
     let cancelled = false;
@@ -142,6 +143,7 @@ function ViewResults() {
     }
 
     setPublishing(true);
+    setPublishError("");
     try {
       // NOTE: Actual email + PDF generation must be done by backend.
       const res = await API.post("/results/publish", {
@@ -159,11 +161,11 @@ function ViewResults() {
           "success"
         );
         setPublishOpen(false);
+        setPublishError("");
       } else if (successCount > 0 && failedCount > 0) {
-        showToast(
-          `Partial publish: ${successCount} sent, ${failedCount} failed. Check backend logs/errors.`,
-          "warning"
-        );
+        const partialMsg = `Partial publish: ${successCount} sent, ${failedCount} failed.`;
+        setPublishError(partialMsg);
+        showToast(partialMsg, "warning");
       } else {
         const firstError =
           Array.isArray(res?.data?.errors) && res.data.errors.length > 0
@@ -173,6 +175,7 @@ function ViewResults() {
           firstError ||
           res?.data?.message ||
           "No emails were sent.";
+        setPublishError(msg);
         showToast(msg, "error");
       }
     } catch (err) {
@@ -187,12 +190,13 @@ function ViewResults() {
       const serverMsg = firstError || data?.message;
 
       if (successCount > 0 && failedCount > 0) {
-        showToast(
-          `Partial publish: ${successCount} sent, ${failedCount} failed. Check backend logs/errors.`,
-          "warning"
-        );
+        const partialMsg = `Partial publish: ${successCount} sent, ${failedCount} failed.`;
+        setPublishError(partialMsg);
+        showToast(partialMsg, "warning");
       } else {
-        showToast(serverMsg || "Failed to publish results. Please try again.", "error");
+        const msg = serverMsg || "Failed to publish results. Please try again.";
+        setPublishError(msg);
+        showToast(msg, "error");
       }
     } finally {
       setPublishing(false);
@@ -369,7 +373,10 @@ function ViewResults() {
         </DialogContent>
         <DialogActions>
           <Button
-            onClick={() => setPublishOpen(false)}
+            onClick={() => {
+              setPublishOpen(false);
+              setPublishError("");
+            }}
             disabled={publishing}
           >
             Cancel
@@ -382,6 +389,13 @@ function ViewResults() {
             Send Emails
           </Button>
         </DialogActions>
+        {publishError && (
+          <Box sx={{ px: 3, pb: 2 }}>
+            <Typography color="error.main" variant="body2" sx={{ fontWeight: 700 }}>
+              {publishError}
+            </Typography>
+          </Box>
+        )}
       </Dialog>
 
       {/* Subjects Dialog */}

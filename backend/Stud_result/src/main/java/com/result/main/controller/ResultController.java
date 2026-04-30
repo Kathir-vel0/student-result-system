@@ -21,6 +21,8 @@ import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.core.io.ByteArrayResource;
 
+import jakarta.mail.internet.AddressException;
+import jakarta.mail.internet.InternetAddress;
 import jakarta.mail.internet.MimeMessage;
 
 import org.apache.pdfbox.pdmodel.PDDocument;
@@ -48,6 +50,8 @@ public class ResultController {
     private JavaMailSender javaMailSender;
     @Value("${spring.mail.username:}")
     private String fromEmail;
+    @Value("${spring.mail.password:}")
+    private String mailPassword;
 
     // ADD (TEACHER)
  // ADD (TEACHER) using StudentId & SubjectCode
@@ -169,10 +173,7 @@ public class ResultController {
                     Student student = studentRepository.findByStudentId(item.getStudentId())
                             .orElseThrow(() -> new RuntimeException("Student not found: " + item.getStudentId()));
 
-                    String toEmail = student.getEmail(); // <-- comes from your Student entity
-                    if (toEmail == null || toEmail.trim().isEmpty()) {
-                        throw new RuntimeException("Student email not found for: " + student.getStudentId());
-                    }
+                    String toEmail = resolveRecipientEmail(item, student);
 
                     // 2) fetch results for this student from DB
                     List<Result> studentResults =
@@ -193,7 +194,7 @@ public class ResultController {
                 } catch (Exception ex) {
                     failed++;
                     String studentId = (item != null && item.getStudentId() != null) ? item.getStudentId() : "unknown";
-                    String errorMessage = "Failed for studentId " + studentId + ": " + ex.getMessage();
+                    String errorMessage = "Failed for studentId " + studentId + ": " + rootCauseMessage(ex);
                     errors.add(errorMessage);
                 }
             }
@@ -224,6 +225,20 @@ public class ResultController {
             resp.put("message", "Publish failed: " + e.getMessage());
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(resp);
         }
+    }
+
+    @GetMapping("/publish/diagnostics")
+    public Map<String, Object> publishDiagnostics() {
+        Map<String, Object> resp = new HashMap<>();
+        boolean hasUsername = fromEmail != null && !fromEmail.trim().isEmpty();
+        boolean hasPassword = mailPassword != null && !mailPassword.trim().isEmpty();
+        resp.put("mailUsernameConfigured", hasUsername);
+        resp.put("mailPasswordConfigured", hasPassword);
+        resp.put("mailFrom", hasUsername ? fromEmail : "");
+        resp.put("message", hasUsername && hasPassword
+                ? "Mail credentials look configured."
+                : "Mail credentials missing. Set SPRING_MAIL_USERNAME and SPRING_MAIL_PASSWORD in Render env.");
+        return resp;
     }
 
     private byte[] generateMarksPdf(Student student, String className, List<Result> studentResults) throws Exception {
@@ -325,6 +340,45 @@ public class ResultController {
         );
 
         javaMailSender.send(message);
+    }
+
+    private String resolveRecipientEmail(PublishedStudent item, Student student) {
+        String dbEmail = student.getEmail();
+        if (isValidEmail(dbEmail)) {
+            return dbEmail.trim();
+        }
+
+        if (item != null && isValidEmail(item.getStudentEmail())) {
+            return item.getStudentEmail().trim();
+        }
+
+        if (student.getUser() != null && isValidEmail(student.getUser().getUsername())) {
+            return student.getUser().getUsername().trim();
+        }
+
+        throw new RuntimeException("No valid recipient email for studentId " + student.getStudentId());
+    }
+
+    private boolean isValidEmail(String email) {
+        if (email == null || email.trim().isEmpty()) {
+            return false;
+        }
+        try {
+            InternetAddress address = new InternetAddress(email.trim());
+            address.validate();
+            return true;
+        } catch (AddressException ex) {
+            return false;
+        }
+    }
+
+    private String rootCauseMessage(Throwable ex) {
+        Throwable current = ex;
+        while (current.getCause() != null) {
+            current = current.getCause();
+        }
+        String msg = current.getMessage();
+        return (msg == null || msg.isBlank()) ? current.getClass().getSimpleName() : msg;
     }
 
     private String safe(String s) {
