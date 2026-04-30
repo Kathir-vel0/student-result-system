@@ -165,7 +165,14 @@ function ViewResults() {
           "warning"
         );
       } else {
-        const msg = res?.data?.message || "No emails were sent.";
+        const firstError =
+          Array.isArray(res?.data?.errors) && res.data.errors.length > 0
+            ? res.data.errors[0]
+            : res?.data?.firstError;
+        const msg =
+          firstError ||
+          res?.data?.message ||
+          "No emails were sent.";
         showToast(msg, "error");
       }
     } catch (err) {
@@ -173,7 +180,11 @@ function ViewResults() {
       const data = err?.response?.data;
       const successCount = Number(data?.success || 0);
       const failedCount = Number(data?.failed || 0);
-      const serverMsg = data?.message;
+      const firstError =
+        Array.isArray(data?.errors) && data.errors.length > 0
+          ? data.errors[0]
+          : data?.firstError;
+      const serverMsg = firstError || data?.message;
 
       if (successCount > 0 && failedCount > 0) {
         showToast(

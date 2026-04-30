@@ -5,6 +5,7 @@ import com.result.main.entity.Result;
 
 import com.result.main.repository.ResultRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -45,6 +46,8 @@ public class ResultController {
     private SubjectRepository subjectRepository;
     @Autowired
     private JavaMailSender javaMailSender;
+    @Value("${spring.mail.username:}")
+    private String fromEmail;
 
     // ADD (TEACHER)
  // ADD (TEACHER) using StudentId & SubjectCode
@@ -200,10 +203,13 @@ public class ResultController {
             resp.put("failed", failed);
             resp.put("totalAttempted", success + failed);
             resp.put("errors", errors);
+            if (!errors.isEmpty()) {
+                resp.put("firstError", errors.get(0));
+            }
 
             if (failed > 0) {
                 if (success == 0) {
-                    resp.put("message", "Failed to send emails to all students.");
+                    resp.put("message", "Failed to send emails to all students. " + errors.get(0));
                     return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(resp);
                 }
                 resp.put("message", "Emails sent to some students; some failed.");
@@ -301,6 +307,9 @@ public class ResultController {
         MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
 
         helper.setTo(toEmail);
+        if (fromEmail != null && !fromEmail.trim().isEmpty()) {
+            helper.setFrom(fromEmail.trim());
+        }
         helper.setSubject("Your Results - " + safe(className));
         helper.setText(
                 "Hello " + safe(studentName) + ",\n\n" +
