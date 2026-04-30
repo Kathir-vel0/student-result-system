@@ -144,16 +144,45 @@ function ViewResults() {
     setPublishing(true);
     try {
       // NOTE: Actual email + PDF generation must be done by backend.
-      await API.post("/results/publish", {
+      const res = await API.post("/results/publish", {
         className: selectedClass,
         students: groupedToPublishPayload(),
       });
 
-      showToast("Results published and emails sent.", "success");
-      setPublishOpen(false);
+      const successCount = Number(res?.data?.success || 0);
+      const failedCount = Number(res?.data?.failed || 0);
+      const totalAttempted = Number(res?.data?.totalAttempted || groupedStudents.length);
+
+      if (failedCount === 0 && successCount > 0) {
+        showToast(
+          `Results published. Emails sent to ${successCount}/${totalAttempted} student(s).`,
+          "success"
+        );
+        setPublishOpen(false);
+      } else if (successCount > 0 && failedCount > 0) {
+        showToast(
+          `Partial publish: ${successCount} sent, ${failedCount} failed. Check backend logs/errors.`,
+          "warning"
+        );
+      } else {
+        const msg = res?.data?.message || "No emails were sent.";
+        showToast(msg, "error");
+      }
     } catch (err) {
       console.error(err);
-      showToast("Failed to publish results. Please try again.", "error");
+      const data = err?.response?.data;
+      const successCount = Number(data?.success || 0);
+      const failedCount = Number(data?.failed || 0);
+      const serverMsg = data?.message;
+
+      if (successCount > 0 && failedCount > 0) {
+        showToast(
+          `Partial publish: ${successCount} sent, ${failedCount} failed. Check backend logs/errors.`,
+          "warning"
+        );
+      } else {
+        showToast(serverMsg || "Failed to publish results. Please try again.", "error");
+      }
     } finally {
       setPublishing(false);
     }

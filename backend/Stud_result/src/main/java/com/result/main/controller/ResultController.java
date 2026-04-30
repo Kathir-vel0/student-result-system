@@ -5,6 +5,8 @@ import com.result.main.entity.Result;
 
 import com.result.main.repository.ResultRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -26,6 +28,7 @@ import org.apache.pdfbox.pdmodel.PDPageContentStream;
 import org.apache.pdfbox.pdmodel.font.PDType1Font;
 
 import java.io.ByteArrayOutputStream;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -141,17 +144,18 @@ public class ResultController {
     }
 
     @PostMapping("/publish")
-    public Map<String, Object> publishResults(@RequestBody PublishRequest request) {
+    public ResponseEntity<Map<String, Object>> publishResults(@RequestBody PublishRequest request) {
         Map<String, Object> resp = new HashMap<>();
         int success = 0;
         int failed = 0;
+        List<String> errors = new ArrayList<>();
 
         try {
             if (request == null || request.getStudents() == null || request.getStudents().isEmpty()) {
                 resp.put("success", 0);
                 resp.put("failed", 0);
                 resp.put("message", "No students provided for publishing.");
-                return resp;
+                return ResponseEntity.badRequest().body(resp);
             }
 
             String className = request.getClassName();
@@ -184,8 +188,10 @@ public class ResultController {
 
                     success++;
                 } catch (Exception ex) {
-                    ex.printStackTrace();
                     failed++;
+                    String studentId = (item != null && item.getStudentId() != null) ? item.getStudentId() : "unknown";
+                    String errorMessage = "Failed for studentId " + studentId + ": " + ex.getMessage();
+                    errors.add(errorMessage);
                 }
             }
 
@@ -193,14 +199,24 @@ public class ResultController {
             resp.put("success", success);
             resp.put("failed", failed);
             resp.put("totalAttempted", success + failed);
+            resp.put("errors", errors);
 
-            return resp;
+            if (failed > 0) {
+                if (success == 0) {
+                    resp.put("message", "Failed to send emails to all students.");
+                    return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(resp);
+                }
+                resp.put("message", "Emails sent to some students; some failed.");
+                return ResponseEntity.status(HttpStatus.MULTI_STATUS).body(resp);
+            }
+
+            resp.put("message", "Emails sent successfully to all students.");
+            return ResponseEntity.ok(resp);
         } catch (Exception e) {
-            e.printStackTrace();
             resp.put("success", 0);
             resp.put("failed", 0);
             resp.put("message", "Publish failed: " + e.getMessage());
-            return resp;
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(resp);
         }
     }
 
