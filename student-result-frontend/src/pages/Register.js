@@ -115,7 +115,6 @@ function Register() {
             >
               <MenuItem value="STUDENT">Student</MenuItem>
               <MenuItem value="TEACHER">Teacher</MenuItem>
-              <MenuItem value="ADMIN">Admin</MenuItem>
             </Select>
           </FormControl>
 
