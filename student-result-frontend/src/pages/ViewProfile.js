@@ -6,6 +6,13 @@ import Typography from "@mui/material/Typography";
 import Grid from "@mui/material/Grid";
 import Avatar from "@mui/material/Avatar";
 import CircularProgress from "@mui/material/CircularProgress";
+import Button from "@mui/material/Button";
+import LogoutOutlinedIcon from "@mui/icons-material/LogoutOutlined";
+
+function handleLogout() {
+  localStorage.clear();
+  window.location.href = "/";
+}
 
 function ViewProfile() {
   const [student, setStudent] = useState(null);
@@ -39,13 +46,16 @@ function ViewProfile() {
   if (!student) {
     return (
       <Box>
-        <Paper sx={{ p: 4, borderRadius: 4, textAlign: 'center' }}>
-          <Typography variant="h5" sx={{ fontWeight: 800, mb: 2, color: 'text.secondary' }}>
+        <Paper sx={{ p: 4, borderRadius: 4, textAlign: "center" }}>
+          <Typography variant="h5" sx={{ fontWeight: 800, mb: 2, color: "text.secondary" }}>
             Profile Not Found
           </Typography>
-          <Typography color="text.secondary">
+          <Typography color="text.secondary" sx={{ mb: 3 }}>
             Your student profile details could not be retrieved. Please contact the administrator.
           </Typography>
+          <Button variant="outlined" color="error" startIcon={<LogoutOutlinedIcon />} onClick={handleLogout}>
+            Log out
+          </Button>
         </Paper>
       </Box>
     );
@@ -109,6 +119,35 @@ function ViewProfile() {
             </Box>
           </Grid>
         </Grid>
+      </Paper>
+
+      <Paper
+        sx={{
+          mt: 3,
+          p: 3,
+          borderRadius: 4,
+          border: "1px solid",
+          borderColor: "divider",
+          bgcolor: "background.paper",
+        }}
+      >
+        <Typography variant="subtitle2" color="text.secondary" sx={{ mb: 2, fontWeight: 600 }}>
+          Session
+        </Typography>
+        <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+          Sign out on this device when you are finished. You can sign in again anytime.
+        </Typography>
+        <Button
+          variant="contained"
+          color="error"
+          size="large"
+          fullWidth
+          startIcon={<LogoutOutlinedIcon />}
+          onClick={handleLogout}
+          sx={{ borderRadius: 2, fontWeight: 800, py: 1.25 }}
+        >
+          Log out
+        </Button>
       </Paper>
     </Box>
   );

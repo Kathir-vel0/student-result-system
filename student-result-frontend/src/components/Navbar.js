@@ -53,6 +53,8 @@ function Navbar() {
   };
 
   const profileRoute = role === "TEACHER" ? "/teacher-profile" : "/view-profile";
+  const isAdmin = role === "ADMIN";
+  const showNavbarLogout = isAdmin;
 
   return (
     <AppBar
@@ -193,28 +195,30 @@ function Navbar() {
             <MenuItem
               onClick={() => {
                 setSettingsAnchor(null);
-                if (role === "ADMIN") return;
+                if (isAdmin) return;
                 navigate(profileRoute);
               }}
             >
               View Profile
             </MenuItem>
 
-            <MenuItem
-              onClick={() => {
-                setSettingsAnchor(null);
-                handleLogout();
-              }}
-            >
-              Logout
-            </MenuItem>
+            {showNavbarLogout && (
+              <MenuItem
+                onClick={() => {
+                  setSettingsAnchor(null);
+                  handleLogout();
+                }}
+              >
+                Logout
+              </MenuItem>
+            )}
           </Menu>
 
         <IconButton 
           color="inherit" 
           aria-label="Account"
           onClick={() => {
-            if (role === "ADMIN") return;
+            if (isAdmin) return;
             navigate(profileRoute);
           }}
         >
@@ -230,20 +234,22 @@ function Navbar() {
           </Avatar>
         </IconButton>
 
-        <Button
-          variant="contained"
-          color="error"
-          size="small"
-          sx={{
-            ml: { xs: 0.5, sm: 1.5 },
-            borderRadius: 2,
-            display: { xs: "none", sm: "inline-flex" },
-            whiteSpace: "nowrap",
-          }}
-          onClick={handleLogout}
-        >
-          Logout
-        </Button>
+        {showNavbarLogout && (
+          <Button
+            variant="contained"
+            color="error"
+            size="small"
+            sx={{
+              ml: { xs: 0.5, sm: 1.5 },
+              borderRadius: 2,
+              display: "inline-flex",
+              whiteSpace: "nowrap",
+            }}
+            onClick={handleLogout}
+          >
+            Logout
+          </Button>
+        )}
         </Box>
       </Toolbar>
     </AppBar>

@@ -10,6 +10,7 @@ import Divider from "@mui/material/Divider";
 import CircularProgress from "@mui/material/CircularProgress";
 import Stack from "@mui/material/Stack";
 import Card from "@mui/material/Card";
+import Button from "@mui/material/Button";
 
 // Icons
 import EmailOutlinedIcon from '@mui/icons-material/EmailOutlined';
@@ -18,6 +19,12 @@ import MenuBookOutlinedIcon from '@mui/icons-material/MenuBookOutlined';
 import BadgeOutlinedIcon from '@mui/icons-material/BadgeOutlined';
 import PersonOutlineOutlinedIcon from '@mui/icons-material/PersonOutlineOutlined';
 import VerifiedUserOutlinedIcon from '@mui/icons-material/VerifiedUserOutlined';
+import LogoutOutlinedIcon from "@mui/icons-material/LogoutOutlined";
+
+function handleLogout() {
+  localStorage.clear();
+  window.location.href = "/";
+}
 
 function TeacherProfile() {
   const [teacher, setTeacher] = useState(null);
@@ -89,13 +96,16 @@ function TeacherProfile() {
   if (!teacher) {
     return (
       <Box>
-        <Paper sx={{ p: 4, borderRadius: 4, textAlign: 'center' }}>
-          <Typography variant="h5" sx={{ fontWeight: 800, mb: 2, color: 'text.secondary' }}>
+        <Paper sx={{ p: 4, borderRadius: 4, textAlign: "center" }}>
+          <Typography variant="h5" sx={{ fontWeight: 800, mb: 2, color: "text.secondary" }}>
             Profile Not Found
           </Typography>
-          <Typography color="text.secondary">
+          <Typography color="text.secondary" sx={{ mb: 3 }}>
             Your teacher profile details could not be retrieved at this time. Please try again later.
           </Typography>
+          <Button variant="outlined" color="error" startIcon={<LogoutOutlinedIcon />} onClick={handleLogout}>
+            Log out
+          </Button>
         </Paper>
       </Box>
     );
@@ -299,6 +309,28 @@ function TeacherProfile() {
               </Stack>
             </Grid>
           </Grid>
+
+          <Divider sx={{ my: 4 }} />
+
+          <Box>
+            <Typography variant="subtitle2" color="text.secondary" sx={{ mb: 1, fontWeight: 700 }}>
+              Session
+            </Typography>
+            <Typography variant="body2" color="text.secondary" sx={{ mb: 2, maxWidth: 560 }}>
+              Sign out on this device when you are done. Your account stays secure; sign in again when you return.
+            </Typography>
+            <Button
+              variant="contained"
+              color="error"
+              size="large"
+              fullWidth
+              startIcon={<LogoutOutlinedIcon />}
+              onClick={handleLogout}
+              sx={{ borderRadius: 2, fontWeight: 800, py: 1.25, maxWidth: { sm: 400 } }}
+            >
+              Log out
+            </Button>
+          </Box>
         </Box>
       </Card>
     </Box>
