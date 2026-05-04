@@ -59,7 +59,13 @@ function Typewriter({ words }) {
   }, [subIndex, index, reverse, words]);
 
   return (
-    <span style={{ color: "#4F46E5", display: "inline-block", minWidth: 260 }}>
+    <span
+      style={{
+        color: "#4F46E5",
+        display: "inline-block",
+        minWidth: "min(100%, 12rem)",
+      }}
+    >
       {`${words[index].substring(0, subIndex)}`}
       <span style={{ animation: "blink 1s step-end infinite", borderRight: "3px solid #4F46E5" }} />
       <style>{"@keyframes blink { 50% { border-color: transparent } }"}</style>
@@ -116,25 +122,79 @@ function Home() {
       <Slide direction="down" in={true} timeout={800}>
         <Box
           sx={{
-            position: "fixed", top: 16, left: 0, right: 0, zIndex: 50, px: 2,
-            display: "flex", justifyContent: "center"
+            position: "fixed",
+            top: { xs: 8, sm: 16 },
+            left: 0,
+            right: 0,
+            zIndex: 50,
+            px: { xs: 1.5, sm: 2 },
+            display: "flex",
+            justifyContent: "center",
+            pt: "env(safe-area-inset-top, 0px)",
           }}
         >
           <Paper
             elevation={0}
             sx={{
-              display: "flex", alignItems: "center", justifyContent: "space-between",
-              px: 4, py: 1.5, borderRadius: 10, bgcolor: "rgba(255,255,255,0.7)",
-              backdropFilter: "blur(12px)", width: "100%", maxWidth: 1000,
-              boxShadow: "0 8px 32px rgba(0,0,0,0.05)"
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "space-between",
+              flexWrap: { xs: "wrap", sm: "nowrap" },
+              rowGap: 1.5,
+              px: { xs: 2, sm: 3, md: 4 },
+              py: { xs: 1.25, sm: 1.5 },
+              borderRadius: { xs: 6, sm: 10 },
+              bgcolor: (t) =>
+                t.palette.mode === "dark"
+                  ? "rgba(15,23,42,0.75)"
+                  : "rgba(255,255,255,0.72)",
+              backdropFilter: "blur(12px)",
+              width: "100%",
+              maxWidth: 1000,
+              boxShadow: "0 8px 32px rgba(0,0,0,0.05)",
             }}
           >
-            <Typography variant="h6" sx={{ fontWeight: 900, color: "primary.main", letterSpacing: -0.5 }}>
+            <Typography
+              variant="h6"
+              sx={{
+                fontWeight: 900,
+                color: "primary.main",
+                letterSpacing: -0.5,
+                fontSize: { xs: "1rem", sm: "1.25rem" },
+              }}
+            >
               ResultSys
             </Typography>
-            <Box sx={{ display: "flex", gap: 2 }}>
-              <Button component={Link} to="/login" sx={{ fontWeight: 800 }}>Sign In</Button>
-              <Button component={Link} to="/register" variant="contained" sx={{ borderRadius: 8, px: 3, fontWeight: 800 }}>Start</Button>
+            <Box
+              sx={{
+                display: "flex",
+                gap: { xs: 1, sm: 2 },
+                width: { xs: "100%", sm: "auto" },
+                justifyContent: { xs: "flex-end", sm: "flex-start" },
+              }}
+            >
+              <Button
+                component={Link}
+                to="/login"
+                size="small"
+                sx={{ fontWeight: 800, flex: { xs: 1, sm: "unset" } }}
+              >
+                Sign In
+              </Button>
+              <Button
+                component={Link}
+                to="/register"
+                variant="contained"
+                size="small"
+                sx={{
+                  borderRadius: 8,
+                  px: { xs: 2, sm: 3 },
+                  fontWeight: 800,
+                  flex: { xs: 1, sm: "unset" },
+                }}
+              >
+                Start
+              </Button>
             </Box>
           </Paper>
         </Box>
@@ -169,7 +229,7 @@ function Home() {
                 mb: 3,
                 mt: 3,
                 color: "text.primary",
-                fontSize: { xs: "3rem", md: "4.5rem" },
+                fontSize: { xs: "2.25rem", sm: "3rem", md: "4.5rem" },
                 letterSpacing: -1,
                 lineHeight: 1.1
               }}
@@ -182,7 +242,16 @@ function Home() {
           <Fade in={true} timeout={1800}>
             <Typography
               variant="h6"
-              sx={{ mb: 6, color: "text.secondary", fontWeight: 400, maxWidth: 650, mx: "auto", lineHeight: 1.6 }}
+              sx={{
+                mb: { xs: 4, md: 6 },
+                color: "text.secondary",
+                fontWeight: 400,
+                maxWidth: 650,
+                mx: "auto",
+                lineHeight: 1.6,
+                fontSize: { xs: "1rem", sm: "1.25rem" },
+                px: { xs: 0.5, sm: 0 },
+              }}
             >
               A beautifully crafted, intelligent gateway to manage school performance. Say goodbye to spreadsheets and rigid legacy systems.
             </Typography>
@@ -196,11 +265,13 @@ function Home() {
                 variant="contained"
                 size="large"
                 sx={{
-                  px: 5,
-                  py: 1.8,
+                  px: { xs: 3, sm: 5 },
+                  py: { xs: 1.4, sm: 1.8 },
                   borderRadius: 8,
                   fontWeight: 800,
-                  fontSize: "1.1rem",
+                  fontSize: { xs: "1rem", sm: "1.1rem" },
+                  width: { xs: "100%", sm: "auto" },
+                  maxWidth: { xs: 360, sm: "none" },
                   animation: `${borderGlow} 3s infinite`,
                   transition: "transform 0.2s",
                   "&:hover": { transform: "translateY(-3px)", bgcolor: "primary.dark" }
@@ -214,7 +285,7 @@ function Home() {
 
         {/* 🌟 STATS SECTION */}
         <Fade in={true} timeout={2800}>
-          <Container maxWidth="md" sx={{ mt: 10, position: "relative", zIndex: 2 }}>
+          <Container maxWidth="md" sx={{ mt: { xs: 6, md: 10 }, position: "relative", zIndex: 2 }}>
             <Paper
               elevation={0}
               sx={{
@@ -261,7 +332,7 @@ function Home() {
           <Grid container spacing={4}>
             {features.map((feat, index) => (
               <Grow in={true} timeout={1500 + index * 500} key={index}>
-                <Grid item xs={12} md={4}>
+                <Grid item xs={12} sm={6} md={4}>
                   <Card
                     elevation={0}
                     sx={{

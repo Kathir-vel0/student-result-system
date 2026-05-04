@@ -172,8 +172,17 @@ function Result() {
           </Grid>
 
           {/* Detailed results table */}
-          <TableContainer component={Paper} sx={{ borderRadius: 4, mb: 3 }}>
-            <Table size="small" aria-label="my results table">
+          <TableContainer
+            component={Paper}
+            sx={{
+              borderRadius: 4,
+              mb: 3,
+              overflowX: "auto",
+              maxWidth: "100%",
+              WebkitOverflowScrolling: "touch",
+            }}
+          >
+            <Table size="small" aria-label="my results table" sx={{ minWidth: 320 }}>
               <TableHead>
                 <TableRow>
                   <TableCell align="center" sx={{ fontWeight: 900 }}>
@@ -297,8 +306,17 @@ function Result() {
                 </Grid>
               </Grid>
 
-              <TableContainer component={Paper} sx={{ boxShadow: "none", border: "1px solid #e5e7eb" }}>
-                <Table size="small" aria-label="marksheet table">
+              <TableContainer
+                component={Paper}
+                sx={{
+                  boxShadow: "none",
+                  border: "1px solid #e5e7eb",
+                  overflowX: "auto",
+                  maxWidth: "100%",
+                  WebkitOverflowScrolling: "touch",
+                }}
+              >
+                <Table size="small" aria-label="marksheet table" sx={{ minWidth: 280 }}>
                   <TableHead>
                     <TableRow>
                       <TableCell sx={{ fontWeight: 900 }}>Subject</TableCell>

@@ -73,10 +73,17 @@ function TeacherDashboard() {
     <Box>
       <Fade in={true} timeout={800}>
         <Box sx={{ mb: 4 }}>
-          <Typography variant="h4" sx={{ fontWeight: 900, color: "text.primary" }}>
+          <Typography
+            variant="h4"
+            sx={{
+              fontWeight: 900,
+              color: "text.primary",
+              fontSize: { xs: "1.5rem", sm: "2rem", md: "2.125rem" },
+            }}
+          >
             Teacher Dashboard
           </Typography>
-          <Typography variant="body1" color="text.secondary" sx={{ mt: 0.5 }}>
+          <Typography variant="body1" color="text.secondary" sx={{ mt: 0.5, fontSize: { xs: "0.95rem", sm: "1rem" } }}>
             Manage your classes, assign grades, and review student progress.
           </Typography>
         </Box>
@@ -85,7 +92,7 @@ function TeacherDashboard() {
       {/* 🌟 STATS CARDS */}
       <Grid container spacing={3} sx={{ mb: 4 }}>
         <Grow in={true} timeout={1000}>
-          <Grid item xs={12} md={6}>
+          <Grid item xs={12} sm={6} md={6}>
             <Card sx={{ borderRadius: 4, boxShadow: "0 10px 30px rgba(0,0,0,0.05)", position: "relative", overflow: "hidden" }}>
               <Box sx={{ position: "absolute", right: -20, top: -20, opacity: 0.05, transform: "scale(2.5)" }}>
                 <PeopleAltIcon sx={{ fontSize: 100 }} />
@@ -106,7 +113,7 @@ function TeacherDashboard() {
         </Grow>
 
         <Grow in={true} timeout={1400}>
-          <Grid item xs={12} md={6}>
+          <Grid item xs={12} sm={6} md={6}>
             <Card sx={{ borderRadius: 4, boxShadow: "0 10px 30px rgba(0,0,0,0.05)", position: "relative", overflow: "hidden" }}>
               <Box sx={{ position: "absolute", right: -20, top: -20, opacity: 0.05, transform: "scale(2.5)" }}>
                 <MenuBookIcon sx={{ fontSize: 100 }} />

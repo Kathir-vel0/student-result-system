@@ -137,8 +137,16 @@ function ViewSubjects() {
         ) : subjects.length === 0 ? (
           <Typography color="text.secondary">No subjects found.</Typography>
         ) : (
-          <TableContainer component={Paper} sx={{ boxShadow: "none" }}>
-            <Table size="small" aria-label="subjects table">
+          <TableContainer
+            component={Paper}
+            sx={{
+              boxShadow: "none",
+              overflowX: "auto",
+              maxWidth: "100%",
+              WebkitOverflowScrolling: "touch",
+            }}
+          >
+            <Table size="small" aria-label="subjects table" sx={{ minWidth: 400 }}>
               <TableHead>
                 <TableRow>
                   <TableCell align="center" sx={{ fontWeight: 900 }}>

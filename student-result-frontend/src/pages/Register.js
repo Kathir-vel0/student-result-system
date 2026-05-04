@@ -67,7 +67,15 @@ function Register() {
           <Typography variant="overline" sx={{ fontWeight: 800, color: "primary.main", letterSpacing: 1.5 }}>
             Student Result System
           </Typography>
-          <Typography variant="h4" sx={{ fontWeight: 900, mt: 1, color: "text.primary" }}>
+          <Typography
+            variant="h4"
+            sx={{
+              fontWeight: 900,
+              mt: 1,
+              color: "text.primary",
+              fontSize: { xs: "1.5rem", sm: "2rem" },
+            }}
+          >
             Create Account
           </Typography>
           <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>

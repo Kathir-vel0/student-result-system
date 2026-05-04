@@ -71,7 +71,14 @@ export default function ThemeProviderWrapper({ children }) {
     <ColorModeContext.Provider value={colorMode}>
       <ThemeProvider theme={theme}>
         <CssBaseline />
-        <Box sx={{ position: "fixed", right: 18, bottom: 18, zIndex: 1400 }}>
+        <Box
+          sx={{
+            position: "fixed",
+            right: { xs: 12, sm: 18 },
+            bottom: { xs: "calc(12px + env(safe-area-inset-bottom, 0px))", sm: 18 },
+            zIndex: 1350,
+          }}
+        >
           <Tooltip
             title={mode === "dark" ? "Switch to Light mode" : "Switch to Dark mode"}
           >

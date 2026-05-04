@@ -284,8 +284,16 @@ function AddResult() {
           </Typography>
         </Paper>
       ) : (
-        <TableContainer component={Paper} sx={{ borderRadius: 4 }}>
-          <Table size="small" aria-label="students results entry table">
+        <TableContainer
+          component={Paper}
+          sx={{
+            borderRadius: 4,
+            overflowX: "auto",
+            maxWidth: "100%",
+            WebkitOverflowScrolling: "touch",
+          }}
+        >
+          <Table size="small" aria-label="students results entry table" sx={{ minWidth: 560 }}>
             <TableHead>
               <TableRow>
                 <TableCell sx={{ fontWeight: 900 }}>Student</TableCell>

@@ -7,6 +7,7 @@ import ListItemButton from "@mui/material/ListItemButton";
 import ListItemIcon from "@mui/material/ListItemIcon";
 import ListItemText from "@mui/material/ListItemText";
 import Typography from "@mui/material/Typography";
+import { useLayoutNav } from "../context/LayoutNavContext";
 
 import DashboardIcon from "@mui/icons-material/Dashboard";
 import PersonAddIcon from "@mui/icons-material/PersonAdd";
@@ -19,7 +20,7 @@ import AccountCircleIcon from "@mui/icons-material/AccountCircle";
 function Sidebar() {
   const role = localStorage.getItem("role");
   const location = useLocation();
-  const drawerWidth = 240;
+  const { isDesktop, mobileOpen, closeMobileNav, drawerWidth } = useLayoutNav();
 
   const items =
     role === "ADMIN"
@@ -47,19 +48,32 @@ function Sidebar() {
         ]
       : [];
 
+  const drawerPaper = {
+    width: drawerWidth,
+    boxSizing: "border-box",
+    borderRight: "1px solid",
+    borderColor: "divider",
+    background:
+      "linear-gradient(180deg, rgba(79,70,229,0.12), rgba(6,182,212,0.06))",
+  };
+
   return (
     <Drawer
-      variant="permanent"
+      variant={isDesktop ? "permanent" : "temporary"}
+      open={isDesktop || mobileOpen}
+      onClose={closeMobileNav}
+      ModalProps={{ keepMounted: true }}
       sx={{
-        width: drawerWidth,
-        flexShrink: 0,
+        width: { md: drawerWidth },
+        flexShrink: { md: 0 },
         [`& .MuiDrawer-paper`]: {
-          width: drawerWidth,
-          boxSizing: "border-box",
-          borderRight: "1px solid",
-          borderColor: "divider",
-          background:
-            "linear-gradient(180deg, rgba(79,70,229,0.12), rgba(6,182,212,0.06))",
+          ...drawerPaper,
+          ...(isDesktop
+            ? {}
+            : {
+                pt: "env(safe-area-inset-top, 0px)",
+                pb: "env(safe-area-inset-bottom, 0px)",
+              }),
         },
       }}
     >
@@ -83,6 +97,9 @@ function Sidebar() {
               selected={selected}
               component={NavLink}
               to={item.to}
+              onClick={() => {
+                if (!isDesktop) closeMobileNav();
+              }}
               sx={{
                 borderRadius: 2,
                 my: 0.5,

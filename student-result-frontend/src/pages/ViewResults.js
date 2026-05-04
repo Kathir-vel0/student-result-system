@@ -232,12 +232,19 @@ function ViewResults() {
 
   return (
     <Box>
-      <Typography variant="h4" sx={{ fontWeight: 900, mb: 2 }}>
+      <Typography
+        variant="h4"
+        sx={{
+          fontWeight: 900,
+          mb: 2,
+          fontSize: { xs: "1.5rem", sm: "2rem", md: "2.125rem" },
+        }}
+      >
         Student Results
       </Typography>
 
       {/* Filter bar */}
-      <Paper sx={{ p: 2.5, borderRadius: 4, mb: 3 }}>
+      <Paper sx={{ p: { xs: 2, sm: 2.5 }, borderRadius: 4, mb: 3 }}>
         <Grid container spacing={2} alignItems="center">
           <Grid item xs={12} md={6}>
             <TextField
@@ -286,11 +293,17 @@ function ViewResults() {
 
       {/* Publish */}
       {searched && groupedStudents.length > 0 && (
-        <Box sx={{ mb: 3, display: "flex", justifyContent: "flex-end" }}>
+        <Box
+          sx={{
+            mb: 3,
+            display: "flex",
+            justifyContent: { xs: "stretch", sm: "flex-end" },
+          }}
+        >
           <Button
             variant="contained"
             color="primary"
-            sx={{ borderRadius: 3 }}
+            sx={{ borderRadius: 3, width: { xs: "100%", sm: "auto" } }}
             onClick={() => setPublishOpen(true)}
             disabled={publishing || loading}
           >
@@ -313,8 +326,16 @@ function ViewResults() {
           </Typography>
         </Paper>
       ) : (
-        <TableContainer component={Paper} sx={{ borderRadius: 4 }}>
-          <Table size="small" aria-label="results table">
+        <TableContainer
+          component={Paper}
+          sx={{
+            borderRadius: 4,
+            overflowX: "auto",
+            maxWidth: "100%",
+            WebkitOverflowScrolling: "touch",
+          }}
+        >
+          <Table size="small" aria-label="results table" sx={{ minWidth: 320 }}>
             <TableHead>
               <TableRow>
                 <TableCell align="center" sx={{ fontWeight: 900 }}>
@@ -404,8 +425,16 @@ function ViewResults() {
           {selectedStudent?.student?.name}'s Subject Marks
         </DialogTitle>
         <DialogContent dividers>
-          <TableContainer component={Paper} elevation={0}>
-            <Table size="small">
+          <TableContainer
+            component={Paper}
+            elevation={0}
+            sx={{
+              overflowX: "auto",
+              maxWidth: "100%",
+              WebkitOverflowScrolling: "touch",
+            }}
+          >
+            <Table size="small" sx={{ minWidth: 280 }}>
               <TableHead>
                 <TableRow>
                   <TableCell sx={{ fontWeight: 800 }}>Subject Code</TableCell>

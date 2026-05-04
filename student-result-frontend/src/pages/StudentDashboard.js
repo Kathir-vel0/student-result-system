@@ -108,10 +108,17 @@ function StudentDashboard() {
     <Box>
       <Fade in={true} timeout={800}>
         <Box sx={{ mb: 4 }}>
-          <Typography variant="h4" sx={{ fontWeight: 900, color: "text.primary" }}>
+          <Typography
+            variant="h4"
+            sx={{
+              fontWeight: 900,
+              color: "text.primary",
+              fontSize: { xs: "1.5rem", sm: "2rem", md: "2.125rem" },
+            }}
+          >
             Student Dashboard
           </Typography>
-          <Typography variant="body1" color="text.secondary" sx={{ mt: 0.5 }}>
+          <Typography variant="body1" color="text.secondary" sx={{ mt: 0.5, fontSize: { xs: "0.95rem", sm: "1rem" } }}>
             Welcome back! Here's an overview of your academic performance.
           </Typography>
         </Box>
@@ -120,7 +127,7 @@ function StudentDashboard() {
       {/* 🌟 STATS CARDS */}
       <Grid container spacing={3} sx={{ mb: 4 }}>
         <Grow in={true} timeout={1000}>
-          <Grid item xs={12} md={4}>
+          <Grid item xs={12} sm={6} md={4}>
             <Card sx={{ borderRadius: 4, boxShadow: "0 10px 30px rgba(0,0,0,0.05)", position: "relative", overflow: "hidden" }}>
               <Box sx={{ position: "absolute", right: -20, top: -20, opacity: 0.05, transform: "scale(2.5)" }}>
                 <AssignmentTurnedInIcon sx={{ fontSize: 100 }} />
@@ -141,7 +148,7 @@ function StudentDashboard() {
         </Grow>
 
         <Grow in={true} timeout={1400}>
-          <Grid item xs={12} md={4}>
+          <Grid item xs={12} sm={6} md={4}>
             <Card sx={{ borderRadius: 4, boxShadow: "0 10px 30px rgba(0,0,0,0.05)", position: "relative", overflow: "hidden" }}>
               <Box sx={{ position: "absolute", right: -20, top: -20, opacity: 0.05, transform: "scale(2.5)" }}>
                 <TrendingUpIcon sx={{ fontSize: 100 }} />
@@ -170,7 +177,7 @@ function StudentDashboard() {
         </Grow>
 
         <Grow in={true} timeout={1800}>
-          <Grid item xs={12} md={4}>
+          <Grid item xs={12} sm={6} md={4}>
             <Card sx={{ borderRadius: 4, boxShadow: "0 10px 30px rgba(0,0,0,0.05)", position: "relative", overflow: "hidden" }}>
               <Box sx={{ position: "absolute", right: -20, top: -20, opacity: 0.05, transform: "scale(2.5)" }}>
                 <MenuBookIcon sx={{ fontSize: 100 }} />
@@ -203,8 +210,14 @@ function StudentDashboard() {
                     <Typography color="text.secondary">No result activities imported yet.</Typography>
                   </Box>
                 ) : (
-                  <TableContainer>
-                    <Table size="medium">
+                  <TableContainer
+                    sx={{
+                      overflowX: "auto",
+                      maxWidth: "100%",
+                      WebkitOverflowScrolling: "touch",
+                    }}
+                  >
+                    <Table size="small" sx={{ minWidth: 280 }}>
                       <TableHead>
                         <TableRow>
                           <TableCell sx={{ fontWeight: 800, borderBottom: "2px solid", borderColor: "divider" }}>Subject</TableCell>

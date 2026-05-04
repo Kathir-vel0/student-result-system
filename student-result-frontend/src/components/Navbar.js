@@ -1,4 +1,4 @@
-import { useLocation, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import AppBar from "@mui/material/AppBar";
 import Toolbar from "@mui/material/Toolbar";
 import Typography from "@mui/material/Typography";
@@ -13,14 +13,17 @@ import ListItem from "@mui/material/ListItem";
 import ListItemText from "@mui/material/ListItemText";
 import NotificationsNoneIcon from "@mui/icons-material/NotificationsNone";
 import SettingsOutlinedIcon from "@mui/icons-material/SettingsOutlined";
+import MenuIcon from "@mui/icons-material/Menu";
 import Avatar from "@mui/material/Avatar";
 import { useTheme } from "@mui/material/styles";
 import { useContext, useMemo, useState } from "react";
 import { ColorModeContext } from "../theme/ThemeProviderWrapper";
+import { useLayoutNav } from "../context/LayoutNavContext";
 
 function Navbar() {
   const navigate = useNavigate();
   const theme = useTheme();
+  const { isDesktop, setMobileOpen } = useLayoutNav();
   const { toggleColorMode } = useContext(ColorModeContext);
   const [notificationAnchor, setNotificationAnchor] = useState(null);
   const [settingsAnchor, setSettingsAnchor] = useState(null);
@@ -62,19 +65,65 @@ function Navbar() {
         borderColor: "divider",
       }}
     >
-      <Toolbar>
-        <Box sx={{ display: "flex", alignItems: "center", gap: 1, minWidth: 210 }}>
-          <Typography variant="h6" sx={{ fontWeight: 900 }}>
+      <Toolbar
+        disableGutters
+        sx={{
+          px: { xs: 1, sm: 2 },
+          gap: 1,
+          minHeight: { xs: 56, sm: 64 },
+          flexWrap: "nowrap",
+        }}
+      >
+        {!isDesktop && (
+          <IconButton
+            color="inherit"
+            edge="start"
+            aria-label="Open navigation menu"
+            onClick={() => setMobileOpen(true)}
+            sx={{ color: "text.primary", mr: 0.5 }}
+          >
+            <MenuIcon />
+          </IconButton>
+        )}
+
+        <Box
+          sx={{
+            display: "flex",
+            alignItems: "center",
+            gap: 1,
+            minWidth: 0,
+            flex: { xs: 1, md: "unset" },
+            mr: { xs: 0, md: 2 },
+          }}
+        >
+          <Typography
+            variant="h6"
+            sx={{
+              fontWeight: 900,
+              display: { xs: "none", md: "block" },
+              whiteSpace: "nowrap",
+            }}
+          >
             ResultSys
           </Typography>
-          <Typography variant="body2" color="text.secondary" sx={{ display: { xs: "none", sm: "block" } }}>
+          <Typography
+            variant="subtitle1"
+            component="div"
+            color="text.secondary"
+            sx={{
+              fontWeight: 700,
+              overflow: "hidden",
+              textOverflow: "ellipsis",
+              whiteSpace: "nowrap",
+            }}
+          >
             {title} Dashboard
           </Typography>
         </Box>
 
-        <Box sx={{ flexGrow: 1 }} />
+        <Box sx={{ flexGrow: 1, minWidth: { xs: 8, sm: 16 } }} />
 
-        <Box sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
+        <Box sx={{ display: "flex", alignItems: "center", gap: { xs: 0.25, sm: 0.5 }, flexShrink: 0 }}>
           <IconButton
             color="inherit"
             aria-label="Notifications"
@@ -91,7 +140,13 @@ function Navbar() {
             anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
             transformOrigin={{ vertical: "top", horizontal: "right" }}
           >
-            <Box sx={{ p: 1.5, width: 320 }}>
+            <Box
+              sx={{
+                p: 1.5,
+                width: "min(100vw - 24px, 320px)",
+                maxWidth: "100vw",
+              }}
+            >
               <Typography
                 variant="subtitle1"
                 sx={{ fontWeight: 900, mb: 1 }}
@@ -179,7 +234,12 @@ function Navbar() {
           variant="contained"
           color="error"
           size="small"
-          sx={{ ml: 2, borderRadius: 2 }}
+          sx={{
+            ml: { xs: 0.5, sm: 1.5 },
+            borderRadius: 2,
+            display: { xs: "none", sm: "inline-flex" },
+            whiteSpace: "nowrap",
+          }}
           onClick={handleLogout}
         >
           Logout

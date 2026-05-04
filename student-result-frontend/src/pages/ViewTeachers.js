@@ -174,8 +174,15 @@ function ViewTeachers() {
           <Typography color="text.secondary">No teachers found</Typography>
         </Paper>
       ) : (
-        <TableContainer component={Paper}>
-          <Table size="small" aria-label="teachers table">
+        <TableContainer
+          component={Paper}
+          sx={{
+            overflowX: "auto",
+            maxWidth: "100%",
+            WebkitOverflowScrolling: "touch",
+          }}
+        >
+          <Table size="small" aria-label="teachers table" sx={{ minWidth: 520 }}>
             <TableHead>
               <TableRow>
                 <TableCell align="center" sx={{ fontWeight: 900 }}>
