@@ -171,8 +171,15 @@ public class ResultController {
 
             String className = request.getClassName();
 
+            int count = 0;
             for (PublishedStudent item : request.getStudents()) {
                 try {
+                    // Add delay starting from the second student to avoid rate limiting
+                    if (count > 0) {
+                        Thread.sleep(1000); 
+                    }
+                    count++;
+
                     // 1) fetch student from DB (authoritative)
                     Student student = studentRepository.findByStudentId(item.getStudentId())
                             .orElseThrow(() -> new RuntimeException("Student not found: " + item.getStudentId()));
@@ -195,9 +202,6 @@ public class ResultController {
                     );
 
                     success++;
-
-                    // 5) Add a small delay to avoid rate limiting from mail providers
-                    Thread.sleep(2000); 
                 } catch (Exception ex) {
                     failed++;
                     String studentId = (item != null && item.getStudentId() != null) ? item.getStudentId() : "unknown";
