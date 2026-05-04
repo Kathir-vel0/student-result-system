@@ -253,9 +253,14 @@ function ViewResults() {
               label="Class"
               value={selectedClass}
               onChange={(e) => setSelectedClass(e.target.value)}
-              SelectProps={{ displayEmpty: true }}
+              sx={{
+                bgcolor: 'background.paper',
+                '& .MuiSelect-select': {
+                  py: 1.5,
+                }
+              }}
             >
-              <MenuItem value="">
+              <MenuItem value="" disabled>
                 <em>Select class</em>
               </MenuItem>
               {classes.map((c) => (
