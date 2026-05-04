@@ -195,6 +195,9 @@ public class ResultController {
                     );
 
                     success++;
+
+                    // 5) Add a small delay to avoid rate limiting from mail providers
+                    Thread.sleep(2000); 
                 } catch (Exception ex) {
                     failed++;
                     String studentId = (item != null && item.getStudentId() != null) ? item.getStudentId() : "unknown";
