@@ -330,12 +330,25 @@ public class ResultController {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         document.save(baos);
         document.close();
-
         return baos.toByteArray();
     }
 
     private void sendEmailWithAttachment(String toEmail, String studentName, String className, byte[] pdfBytes) throws Exception {
-        MimeMessage message = javaMailSender.createMimeMessage();
+        // Create a custom mail sender properties for this specific send
+        java.util.Properties props = new java.util.Properties();
+        props.put("mail.smtp.auth", "true");
+        props.put("mail.smtp.starttls.enable", "false"); // Use SSL/TLS instead of STARTTLS
+        props.put("mail.smtp.host", "smtp.gmail.com");
+        props.put("mail.smtp.port", "465");
+        props.put("mail.smtp.socketFactory.port", "465");
+        props.put("mail.smtp.socketFactory.class", "javax.net.ssl.SSLSocketFactory");
+        props.put("mail.smtp.connectiontimeout", "15000"); // 15 seconds
+        props.put("mail.smtp.timeout", "15000");
+        
+        org.springframework.mail.javamail.JavaMailSenderImpl senderImpl = (org.springframework.mail.javamail.JavaMailSenderImpl) javaMailSender;
+        senderImpl.setJavaMailProperties(props);
+
+        MimeMessage message = senderImpl.createMimeMessage();
         MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
 
         helper.setTo(toEmail);
@@ -356,7 +369,7 @@ public class ResultController {
                 "application/pdf"
         );
 
-        javaMailSender.send(message);
+        senderImpl.send(message);
     }
 
     private String resolveRecipientEmail(PublishedStudent item, Student student) {
