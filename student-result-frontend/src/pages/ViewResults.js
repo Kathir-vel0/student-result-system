@@ -40,39 +40,39 @@ function ViewResults() {
   const [publishing, setPublishing] = useState(false);
   const [publishError, setPublishError] = useState("");
 
-  useEffect(() => {
-    let cancelled = false;
+  async function loadResults() {
+    setLoading(true);
+    try {
+      const [resultsRes, studentsRes] = await Promise.all([
+        API.get("/results/all"),
+        API.get("/students"),
+      ]);
 
-    async function load() {
-      setLoading(true);
-      try {
-        const [resultsRes, studentsRes] = await Promise.all([
-          API.get("/results/all"),
-          API.get("/students"),
-        ]);
+      const all = resultsRes.data || [];
+      setAllResults(all);
 
-        if (cancelled) return;
-
-        setAllResults(resultsRes.data || []);
-
-        const classSet = new Set();
-        for (const s of studentsRes.data || []) {
-          if (s?.className) classSet.add(String(s.className));
-        }
-        const classList = Array.from(classSet).sort();
-        setClasses(classList);
-      } catch (err) {
-        console.error("ERROR:", err);
-      } finally {
-        if (!cancelled) setLoading(false);
+      if (selectedClass) {
+        const filtered = all.filter(
+          (r) => String(r?.student?.className || "") === String(selectedClass)
+        );
+        setResults(filtered);
       }
+
+      const classSet = new Set();
+      for (const s of studentsRes.data || []) {
+        if (s?.className) classSet.add(String(s.className));
+      }
+      const classList = Array.from(classSet).sort();
+      setClasses(classList);
+    } catch (err) {
+      console.error("ERROR:", err);
+    } finally {
+      setLoading(false);
     }
+  }
 
-    load();
-
-    return () => {
-      cancelled = true;
-    };
+  useEffect(() => {
+    loadResults();
   }, []);
 
   const gradeToChip = (grade) => {
@@ -162,6 +162,7 @@ function ViewResults() {
         );
         setPublishOpen(false);
         setPublishError("");
+        loadResults(); // Refresh status
       } else if (successCount > 0 && failedCount > 0) {
         const partialMsg = `Partial publish: ${successCount} sent, ${failedCount} failed.`;
         setPublishError(partialMsg);
@@ -350,6 +351,9 @@ function ViewResults() {
                   Total Percentage
                 </TableCell>
                 <TableCell align="center" sx={{ fontWeight: 900 }}>
+                  Status
+                </TableCell>
+                <TableCell align="center" sx={{ fontWeight: 900 }}>
                   Actions
                 </TableCell>
               </TableRow>
@@ -358,6 +362,8 @@ function ViewResults() {
             <TableBody>
               {groupedStudents.map((data, index) => {
                 const percentage = data.count > 0 ? (data.totalMarks / data.count).toFixed(2) : 0;
+                const isPublished = data.results.every(r => r.published);
+                
                 return (
                   <TableRow
                     key={index}
@@ -369,6 +375,14 @@ function ViewResults() {
                     </TableCell>
                     <TableCell align="center">
                       {percentage}%
+                    </TableCell>
+                    <TableCell align="center">
+                      <Chip 
+                        label={isPublished ? "Published" : "Pending"} 
+                        color={isPublished ? "success" : "warning"} 
+                        size="small" 
+                        sx={{ fontWeight: 800 }} 
+                      />
                     </TableCell>
                     <TableCell align="center">
                       <Button variant="outlined" size="small" onClick={() => handleViewSubjects(data)}>

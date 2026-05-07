@@ -25,6 +25,8 @@ public class Result {
     @JoinColumn(name = "subject_id", nullable = false)
     private Subject subject;
 
+    private boolean published = false;
+
     // ===== Getters & Setters =====
 
     public Long getId() {
@@ -51,6 +53,10 @@ public class Result {
         return subject;
     }
 
+    public boolean isPublished() {
+        return published;
+    }
+
     public void setId(Long id) {
         this.id = id;
     }
@@ -73,5 +79,9 @@ public class Result {
 
     public void setSubject(Subject subject) {
         this.subject = subject;
+    }
+
+    public void setPublished(boolean published) {
+        this.published = published;
     }
 }

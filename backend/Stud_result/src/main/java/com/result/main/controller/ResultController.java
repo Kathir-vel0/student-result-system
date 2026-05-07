@@ -87,6 +87,8 @@ public class ResultController {
         result.setMarks(request.getMarks());
         result.setGrade(request.getGrade());
         result.setComments(request.getComment());
+        // Results are unpublished by default when added/updated by teacher
+        result.setPublished(false);
 
         return resultRepository.save(result);
     }
@@ -94,7 +96,8 @@ public class ResultController {
     // VIEW BY STUDENT
     @GetMapping("/student/{studentId}")
     public List<Result> getResultByStudent(@PathVariable String studentId) {
-        return resultRepository.findByStudentStudentId(studentId);
+        // Students should only see published results
+        return resultRepository.findByStudentStudentIdAndPublishedTrue(studentId);
     }
 
     // UPDATE (TEACHER)
@@ -108,6 +111,7 @@ public class ResultController {
             r.setSubject(updatedResult.getSubject());
             r.setStudent(updatedResult.getStudent());
             r.setComments(updatedResult.getComments());
+            r.setPublished(false); // Unpublish on update
             return resultRepository.save(r);
         } else {
             return null;
@@ -189,6 +193,12 @@ public class ResultController {
                     // 2) fetch results for this student from DB
                     List<Result> studentResults =
                             resultRepository.findByStudentStudentId(student.getStudentId());
+
+                    // 2.1) Mark results as published in DB
+                    for (Result r : studentResults) {
+                        r.setPublished(true);
+                        resultRepository.save(r);
+                    }
 
                     // 3) generate PDF bytes
                     byte[] pdfBytes = generateMarksPdf(student, className, studentResults);
