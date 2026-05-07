@@ -155,9 +155,9 @@ function ViewResults() {
       const failedCount = Number(res?.data?.failed || 0);
       const totalAttempted = Number(res?.data?.totalAttempted || groupedStudents.length);
 
-      if (failedCount === 0 && successCount > 0) {
+      if (successCount > 0) {
         showToast(
-          `Results published. Emails sent to ${successCount}/${totalAttempted} student(s).`,
+          `Results published successfully for ${successCount} student(s).`,
           "success"
         );
         setPublishOpen(false);
@@ -404,10 +404,10 @@ function ViewResults() {
         maxWidth="sm"
         fullWidth
       >
-        <DialogTitle sx={{ fontWeight: 900 }}>Publish & Send Emails</DialogTitle>
+        <DialogTitle sx={{ fontWeight: 900 }}>Publish Results</DialogTitle>
         <DialogContent dividers>
           <Typography color="text.secondary">
-            This will email marksheets (PDF) to all students in <b>{selectedClass}</b>.
+            This will make results visible to all students in <b>{selectedClass}</b>.
             Please confirm.
           </Typography>
         </DialogContent>
@@ -426,7 +426,7 @@ function ViewResults() {
             onClick={handlePublish}
             disabled={publishing}
           >
-            Send Emails
+            Confirm Publish
           </Button>
         </DialogActions>
         {publishError && (

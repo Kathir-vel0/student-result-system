@@ -168,55 +168,26 @@ public class ResultController {
         try {
             if (request == null || request.getStudents() == null || request.getStudents().isEmpty()) {
                 resp.put("success", 0);
-                resp.put("failed", 0);
                 resp.put("message", "No students provided for publishing.");
                 return ResponseEntity.badRequest().body(resp);
             }
 
-            String className = request.getClassName();
-
-            int count = 0;
             for (PublishedStudent item : request.getStudents()) {
                 try {
-                    // Add delay starting from the second student to avoid rate limiting
-                    if (count > 0) {
-                        Thread.sleep(1000); 
-                    }
-                    count++;
-
-                    // 1) fetch student from DB (authoritative)
-                    Student student = studentRepository.findByStudentId(item.getStudentId())
-                            .orElseThrow(() -> new RuntimeException("Student not found: " + item.getStudentId()));
-
-                    String toEmail = resolveRecipientEmail(item, student);
-
-                    // 2) fetch results for this student from DB
+                    // 1) fetch results for this student from DB
                     List<Result> studentResults =
-                            resultRepository.findByStudentStudentId(student.getStudentId());
+                            resultRepository.findByStudentStudentId(item.getStudentId());
 
-                    // 2.1) Mark results as published in DB
+                    // 2) Mark results as published in DB
                     for (Result r : studentResults) {
                         r.setPublished(true);
                         resultRepository.save(r);
                     }
 
-                    // 3) generate PDF bytes
-                    byte[] pdfBytes = generateMarksPdf(student, className, studentResults);
-
-                    // 4) email with attachment
-                    sendEmailWithAttachment(
-                            toEmail,
-                            student.getName(),
-                            className,
-                            pdfBytes
-                    );
-
                     success++;
                 } catch (Exception ex) {
                     failed++;
-                    String studentId = (item != null && item.getStudentId() != null) ? item.getStudentId() : "unknown";
-                    String errorMessage = "Failed for studentId " + studentId + ": " + rootCauseMessage(ex);
-                    errors.add(errorMessage);
+                    errors.add("Failed for studentId " + item.getStudentId() + ": " + ex.getMessage());
                 }
             }
 
@@ -224,25 +195,10 @@ public class ResultController {
             resp.put("success", success);
             resp.put("failed", failed);
             resp.put("totalAttempted", success + failed);
-            resp.put("errors", errors);
-            if (!errors.isEmpty()) {
-                resp.put("firstError", errors.get(0));
-            }
-
-            if (failed > 0) {
-                if (success == 0) {
-                    resp.put("message", "Failed to send emails to all students. " + errors.get(0));
-                    return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(resp);
-                }
-                resp.put("message", "Emails sent to some students; some failed.");
-                return ResponseEntity.status(HttpStatus.MULTI_STATUS).body(resp);
-            }
-
-            resp.put("message", "Emails sent successfully to all students.");
+            resp.put("message", "Results published successfully in the database.");
+            
             return ResponseEntity.ok(resp);
         } catch (Exception e) {
-            resp.put("success", 0);
-            resp.put("failed", 0);
             resp.put("message", "Publish failed: " + e.getMessage());
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(resp);
         }
