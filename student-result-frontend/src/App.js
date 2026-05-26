@@ -48,7 +48,6 @@ function App() {
             <Route path="view-teachers" element={<ViewTeachers />} />
             <Route path="view-subjects" element={<ViewSubjects />} />
             <Route path="view-results" element={<ViewResults />} />
-            <Route path="attendance" element={<AttendanceManagement />} />
             <Route path="audit-logs" element={<AuditLogs />} />
           </Route>
 
@@ -57,7 +56,6 @@ function App() {
             <Route path="teacher" element={<TeacherDashboard />} />
             <Route path="teacher-profile" element={<TeacherProfile />} />
             <Route path="add-result" element={<AddResult />} />
-            <Route path="attendance" element={<AttendanceManagement />} />
           </Route>
 
           {/* 🛡️ STUDENT ONLY ROUTES */}
@@ -65,10 +63,13 @@ function App() {
             <Route path="student" element={<StudentDashboard />} />
             <Route path="result" element={<Result />} />
             <Route path="view-profile" element={<ViewProfile />} />
+          </Route>
+
+          {/* 🛡️ SHARED ROUTES (multi-role) */}
+          <Route element={<ProtectedRoute allowedRoles={["ADMIN", "TEACHER", "STUDENT"]} />}>
             <Route path="attendance" element={<AttendanceManagement />} />
           </Route>
 
-          {/* 🛡️ SHARED ROUTES */}
           <Route element={<ProtectedRoute allowedRoles={["ADMIN", "TEACHER"]} />}>
             <Route path="view-students" element={<ViewStudents />} />
           </Route>

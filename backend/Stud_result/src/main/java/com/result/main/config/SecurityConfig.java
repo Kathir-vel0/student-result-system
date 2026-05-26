@@ -55,22 +55,21 @@ public class SecurityConfig {
                 .requestMatchers("/api/audit/**").hasRole("ADMIN")
                 .requestMatchers(HttpMethod.POST, "/api/results/publish").hasRole("ADMIN")
                 .requestMatchers("/api/teachers/page").hasRole("ADMIN")
-                .requestMatchers("/api/attendance/analytics").hasAnyRole("ADMIN", "TEACHER")
+                // Attendance — role-scoped (order: specific before broad)
+                .requestMatchers("/api/attendance/student/**").hasAnyRole("STUDENT", "ADMIN", "TEACHER")
+                .requestMatchers("/api/attendance/mark", "/api/attendance/bulk").hasAnyRole("ADMIN", "TEACHER")
+                .requestMatchers("/api/attendance/page", "/api/attendance/analytics").hasAnyRole("ADMIN", "TEACHER")
 
                 // Teacher
                 .requestMatchers(HttpMethod.POST, "/api/results/add").hasRole("TEACHER")
                 .requestMatchers(HttpMethod.PUT, "/api/results/update/**").hasRole("TEACHER")
                 .requestMatchers("/api/analytics/teacher").hasRole("TEACHER")
-                .requestMatchers("/api/attendance/mark").hasAnyRole("ADMIN", "TEACHER")
-                .requestMatchers("/api/attendance/bulk").hasAnyRole("ADMIN", "TEACHER")
                 .requestMatchers("/api/teachers/subjects").hasRole("TEACHER")
                 .requestMatchers("/api/teachers/dashboard-stats").hasRole("TEACHER")
 
                 // Student
                 .requestMatchers("/api/analytics/student/**").hasAnyRole("STUDENT", "ADMIN", "TEACHER")
                 .requestMatchers("/api/analytics/report-card/**").hasAnyRole("STUDENT", "ADMIN", "TEACHER")
-                .requestMatchers("/api/attendance/student/**").hasAnyRole("STUDENT", "ADMIN", "TEACHER")
-
                 // Shared authenticated
                 .requestMatchers("/api/teachers/user/**").hasAnyRole("TEACHER", "ADMIN")
                 .requestMatchers("/api/students/user/**").hasAnyRole("STUDENT", "ADMIN", "TEACHER")
@@ -84,8 +83,6 @@ public class SecurityConfig {
                 .requestMatchers("/api/results/page").hasAnyRole("ADMIN", "TEACHER")
                 .requestMatchers("/api/results/**").hasAnyRole("ADMIN", "TEACHER")
                 .requestMatchers("/api/subjects/page").hasAnyRole("ADMIN", "TEACHER")
-                .requestMatchers("/api/attendance/page").hasAnyRole("ADMIN", "TEACHER")
-
                 .anyRequest().authenticated()
             )
             .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);

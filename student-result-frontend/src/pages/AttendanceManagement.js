@@ -31,8 +31,10 @@ const STATUS_COLORS = {
 };
 
 function AttendanceManagement() {
-  const role = localStorage.getItem("role");
+  const role = (localStorage.getItem("role") || "").trim().toUpperCase();
   const studentId = localStorage.getItem("studentId");
+  const isStudent = role === "STUDENT";
+  const isStaff = role === "ADMIN" || role === "TEACHER";
   const { showToast } = useToast();
 
   const [students, setStudents] = useState([]);
@@ -47,10 +49,11 @@ function AttendanceManagement() {
   const paginated = usePaginatedList("/attendance/page", {
     defaultSize: 10,
     extraParams: { className: "", date: "", status: "", search: "" },
+    enabled: isStaff,
   });
 
   useEffect(() => {
-    if (role === "STUDENT" && studentId) {
+    if (isStudent && studentId) {
       setHistoryLoading(true);
       Promise.all([
         API.get(`/attendance/student/${studentId}/summary`),
@@ -65,10 +68,12 @@ function AttendanceManagement() {
       return;
     }
 
+    if (!isStaff) return;
+
     API.get("/students")
       .then((res) => setStudents(res.data || []))
       .catch(console.error);
-  }, [role, studentId]);
+  }, [isStudent, isStaff, studentId]);
 
   const classes = useMemo(() => {
     const set = new Set(students.map((s) => s.className).filter(Boolean));
@@ -110,7 +115,22 @@ function AttendanceManagement() {
     setBulkStatus(next);
   };
 
-  if (role === "STUDENT") {
+  if (isStudent) {
+    if (!studentId) {
+      return (
+        <Box>
+          <Typography variant="h4" sx={{ fontWeight: 900, mb: 2 }}>
+            My Attendance
+          </Typography>
+          <Paper sx={{ p: 3, borderRadius: 4 }}>
+            <Typography color="text.secondary">
+              Student profile not linked. Please contact your administrator or log in again.
+            </Typography>
+          </Paper>
+        </Box>
+      );
+    }
+
     return (
       <Box>
         <Typography variant="h4" sx={{ fontWeight: 900, mb: 3 }}>

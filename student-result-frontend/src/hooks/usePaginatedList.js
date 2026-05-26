@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useState } from "react";
 import API from "../api/api";
 
-export default function usePaginatedList(endpoint, { defaultSize = 10, extraParams = {} } = {}) {
+export default function usePaginatedList(endpoint, { defaultSize = 10, extraParams = {}, enabled = true } = {}) {
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [page, setPage] = useState(0);
@@ -11,6 +11,10 @@ export default function usePaginatedList(endpoint, { defaultSize = 10, extraPara
   const [filters, setFilters] = useState({ search: "", ...extraParams });
 
   const fetchData = useCallback(async () => {
+    if (!enabled) {
+      setLoading(false);
+      return;
+    }
     setLoading(true);
     try {
       const params = { page, size, ...filters };
@@ -30,7 +34,7 @@ export default function usePaginatedList(endpoint, { defaultSize = 10, extraPara
     } finally {
       setLoading(false);
     }
-  }, [endpoint, page, size, filters]);
+  }, [endpoint, page, size, filters, enabled]);
 
   useEffect(() => {
     fetchData();
