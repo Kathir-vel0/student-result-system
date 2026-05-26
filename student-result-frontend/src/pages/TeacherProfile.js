@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import API from "../api/api";
 import Box from "@mui/material/Box";
 import Paper from "@mui/material/Paper";
@@ -21,10 +21,7 @@ import PersonOutlineOutlinedIcon from '@mui/icons-material/PersonOutlineOutlined
 import VerifiedUserOutlinedIcon from '@mui/icons-material/VerifiedUserOutlined';
 import LogoutOutlinedIcon from "@mui/icons-material/LogoutOutlined";
 
-function handleLogout() {
-  localStorage.clear();
-  window.location.href = "/";
-}
+import ProfileFooter from "../components/ProfileFooter";
 
 function TeacherProfile() {
   const [teacher, setTeacher] = useState(null);
@@ -100,7 +97,7 @@ function TeacherProfile() {
           <Typography color="text.secondary" sx={{ mb: 3 }}>
             Your teacher profile details could not be retrieved at this time. Please try again later.
           </Typography>
-          <Button variant="outlined" color="error" startIcon={<LogoutOutlinedIcon />} onClick={handleLogout}>
+          <Button variant="outlined" color="error" startIcon={<LogoutOutlinedIcon />} onClick={() => { localStorage.clear(); window.location.href = "/"; }}>
             Log out
           </Button>
         </Paper>
@@ -307,29 +304,10 @@ function TeacherProfile() {
             </Grid>
           </Grid>
 
-          <Divider sx={{ my: 4 }} />
-
-          <Box>
-            <Typography variant="subtitle2" color="text.secondary" sx={{ mb: 1, fontWeight: 700 }}>
-              Session
-            </Typography>
-            <Typography variant="body2" color="text.secondary" sx={{ mb: 2, maxWidth: 560 }}>
-              Sign out on this device when you are done. Your account stays secure; sign in again when you return.
-            </Typography>
-            <Button
-              variant="contained"
-              color="error"
-              size="large"
-              fullWidth
-              startIcon={<LogoutOutlinedIcon />}
-              onClick={handleLogout}
-              sx={{ borderRadius: 2, fontWeight: 800, py: 1.25, maxWidth: { sm: 400 } }}
-            >
-              Log out
-            </Button>
-          </Box>
         </Box>
       </Card>
+
+      <ProfileFooter />
     </Box>
   );
 }

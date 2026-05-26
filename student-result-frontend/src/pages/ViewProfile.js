@@ -8,11 +8,7 @@ import Avatar from "@mui/material/Avatar";
 import CircularProgress from "@mui/material/CircularProgress";
 import Button from "@mui/material/Button";
 import LogoutOutlinedIcon from "@mui/icons-material/LogoutOutlined";
-
-function handleLogout() {
-  localStorage.clear();
-  window.location.href = "/";
-}
+import ProfileFooter from "../components/ProfileFooter";
 
 function ViewProfile() {
   const [student, setStudent] = useState(null);
@@ -53,7 +49,7 @@ function ViewProfile() {
           <Typography color="text.secondary" sx={{ mb: 3 }}>
             Your student profile details could not be retrieved. Please contact the administrator.
           </Typography>
-          <Button variant="outlined" color="error" startIcon={<LogoutOutlinedIcon />} onClick={handleLogout}>
+          <Button variant="outlined" color="error" startIcon={<LogoutOutlinedIcon />} onClick={() => { localStorage.clear(); window.location.href = "/"; }}>
             Log out
           </Button>
         </Paper>
@@ -121,34 +117,7 @@ function ViewProfile() {
         </Grid>
       </Paper>
 
-      <Paper
-        sx={{
-          mt: 3,
-          p: 3,
-          borderRadius: 4,
-          border: "1px solid",
-          borderColor: "divider",
-          bgcolor: "background.paper",
-        }}
-      >
-        <Typography variant="subtitle2" color="text.secondary" sx={{ mb: 2, fontWeight: 600 }}>
-          Session
-        </Typography>
-        <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-          Sign out on this device when you are finished. You can sign in again anytime.
-        </Typography>
-        <Button
-          variant="contained"
-          color="error"
-          size="large"
-          fullWidth
-          startIcon={<LogoutOutlinedIcon />}
-          onClick={handleLogout}
-          sx={{ borderRadius: 2, fontWeight: 800, py: 1.25 }}
-        >
-          Log out
-        </Button>
-      </Paper>
+      <ProfileFooter />
     </Box>
   );
 }
