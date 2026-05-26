@@ -25,8 +25,20 @@ function Login() {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
+    const username = login.username?.trim() ?? "";
+    const password = login.password ?? "";
+
+    if (!username || !password) {
+      showToast("Username and password are required.", "warning");
+      return;
+    }
+
+    const payload = { username, password };
+
     try {
-      const res = await API.post("/users/login", login);
+      const res = await API.post("/users/login", payload, {
+        headers: { "Content-Type": "application/json" },
+      });
       const { token, role, userId, username } = res.data;
 
       // 🔹 Securely persist JWT session tokens and user context

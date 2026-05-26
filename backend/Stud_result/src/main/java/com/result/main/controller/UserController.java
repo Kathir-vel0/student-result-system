@@ -10,6 +10,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
+import com.result.main.dto.LoginRequest;
+import com.result.main.dto.RegisterRequest;
 import com.result.main.entity.User;
 import com.result.main.entity.Role;
 import com.result.main.repository.UserRepository;
@@ -49,30 +51,32 @@ public class UserController {
 
     // 🔹 Public Student Registration
     @PostMapping
-    public ResponseEntity<?> createUser(@RequestBody User user) {
-        System.out.println("🔍 Public register attempt for username: " + user.getUsername());
-        
-        if (user.getUsername() == null || user.getUsername().trim().isEmpty()) {
+    public ResponseEntity<?> createUser(@RequestBody RegisterRequest request) {
+        String username = request.getUsername() != null ? request.getUsername().trim() : null;
+        String rawPassword = request.getPassword();
+
+        System.out.println("🔍 Public register attempt for username: " + username);
+
+        if (username == null || username.isEmpty()) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of("message", "Username is required"));
         }
-        if (user.getPassword() == null || user.getPassword().trim().isEmpty()) {
+        if (rawPassword == null || rawPassword.isEmpty()) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of("message", "Password is required"));
         }
 
-        // Force STUDENT role and save
-        user.setRole(Role.STUDENT);
-        user.setCreatedBy("SELF_REGISTERED");
-
-        if (userRepository.existsByUsername(user.getUsername())) {
-            System.out.println("⚠️ Registration failed: Username " + user.getUsername() + " is duplicate");
+        if (userRepository.existsByUsername(username)) {
+            System.out.println("⚠️ Registration failed: Username " + username + " is duplicate");
             return ResponseEntity.status(HttpStatus.CONFLICT).body(Map.of("message", "Username is already taken"));
         }
 
-        // Securely hash password using BCrypt
-        user.setPassword(passwordEncoder.encode(user.getPassword()));
+        User user = new User();
+        user.setUsername(username);
+        user.setPassword(passwordEncoder.encode(rawPassword));
+        user.setRole(Role.STUDENT);
+        user.setCreatedBy("SELF_REGISTERED");
 
         User savedUser = userRepository.save(user);
-        System.out.println("✅ Public registration successful for Student: " + user.getUsername());
+        System.out.println("✅ Public registration successful for Student: " + username);
 
         savedUser.setPassword(null);
         return ResponseEntity.status(HttpStatus.CREATED).body(savedUser);
@@ -80,12 +84,13 @@ public class UserController {
 
     // 🔹 Secure JWT Login with Migration-Safe Password check
     @PostMapping("/login")
-    public ResponseEntity<?> login(@RequestBody User loginRequest) {
-        String username = loginRequest.getUsername();
+    public ResponseEntity<?> login(@RequestBody LoginRequest loginRequest) {
+        String username = loginRequest.getUsername() != null ? loginRequest.getUsername().trim() : null;
         String plainPassword = loginRequest.getPassword();
 
         System.out.println("\n--- 🔍 LOGIN ATTEMPT ---");
-        System.out.println("🔍 Username received: " + username);
+        System.out.println("🔍 LoginRequest received — username: " + username
+                + ", password present: " + (plainPassword != null && !plainPassword.isEmpty()));
 
         if (username == null || plainPassword == null || username.trim().isEmpty() || plainPassword.isEmpty()) {
             System.out.println("❌ Login failed: Empty username or password");
