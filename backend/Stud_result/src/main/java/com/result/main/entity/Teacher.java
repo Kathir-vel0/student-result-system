@@ -20,6 +20,8 @@ public class Teacher {
 
     private String status;
 
+    private String gender;
+
     @ManyToOne
     @JoinColumn(name = "subject_id")
     private Subject subject;
@@ -30,6 +32,15 @@ public class Teacher {
     private User user;
 
     // ===== Getters & Setters =====
+
+    public String getGender() {
+        return gender;
+    }
+
+    public void setGender(String gender) {
+        this.gender = gender;
+    }
+
 
     public Long getId() {
         return id;

@@ -43,6 +43,7 @@ public class TeacherController {
         String email = (String) payload.get("email");
         String phone = (String) payload.get("phone");
         String status = (String) payload.get("status");
+        String gender = (String) payload.get("gender");
         
         Object subjectIdObj = payload.get("subjectId");
         if (username == null || username.trim().isEmpty() ||
@@ -75,6 +76,7 @@ public class TeacherController {
         teacher.setEmail(email);
         teacher.setPhone(phone);
         teacher.setStatus(status != null ? status : "ACTIVE");
+        teacher.setGender(gender != null ? gender : "Male");
         teacher.setUser(savedUser);
         teacher.setSubject(subject);
 
@@ -149,6 +151,7 @@ public class TeacherController {
             teacher.setEmail(updatedTeacher.getEmail());
             teacher.setPhone(updatedTeacher.getPhone());
             teacher.setStatus(updatedTeacher.getStatus());
+            teacher.setGender(updatedTeacher.getGender());
 
             if (updatedTeacher.getUser() != null && updatedTeacher.getUser().getId() != null) {
                 Long userId = updatedTeacher.getUser().getId();
