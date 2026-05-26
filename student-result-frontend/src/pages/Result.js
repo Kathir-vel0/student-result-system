@@ -14,8 +14,10 @@ import TableContainer from "@mui/material/TableContainer";
 import TableHead from "@mui/material/TableHead";
 import TableRow from "@mui/material/TableRow";
 import Chip from "@mui/material/Chip";
+import DownloadReportCardButton from "../components/common/DownloadReportCardButton";
 
 function Result() {
+  const studentId = localStorage.getItem("studentId");
   const [results, setResults] = useState([]);
   const [loading, setLoading] = useState(true);
 
@@ -117,9 +119,12 @@ function Result() {
 
   return (
     <Box>
-      <Typography variant="h4" sx={{ fontWeight: 900, mb: 2 }}>
-        My Results
-      </Typography>
+      <Box sx={{ display: "flex", flexWrap: "wrap", alignItems: "center", justifyContent: "space-between", gap: 2, mb: 2 }}>
+        <Typography variant="h4" sx={{ fontWeight: 900 }}>
+          My Results
+        </Typography>
+        <DownloadReportCardButton studentId={studentId} size="small" />
+      </Box>
 
       {loading ? (
         <Paper sx={{ p: 3 }}>

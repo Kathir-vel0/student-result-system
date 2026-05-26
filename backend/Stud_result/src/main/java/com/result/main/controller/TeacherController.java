@@ -37,6 +37,9 @@ public class TeacherController {
     @Autowired
     private com.result.main.repository.StudentRepository studentRepository;
 
+    @Autowired
+    private com.result.main.service.AuditService auditService;
+
     // 🔹 UNIFIED FLOW: CREATE USER + TEACHER PROFILE (Admin only)
     @PostMapping("/create-full")
     public ResponseEntity<?> createTeacherFull(@RequestBody Map<String, Object> payload) {
@@ -84,6 +87,8 @@ public class TeacherController {
         teacher.setSubject(subject);
 
         Teacher savedTeacher = teacherRepository.save(teacher);
+        auditService.log("TEACHER_CREATED", "admin", "ADMIN", "Teacher",
+                "Created teacher " + name + " (" + username + ") for subject " + subject.getSubjectName());
         return ResponseEntity.status(HttpStatus.CREATED).body(savedTeacher);
     }
 
@@ -191,6 +196,9 @@ public class TeacherController {
         if (user != null) {
             userRepository.delete(user);
         }
+
+        auditService.log("TEACHER_DELETED", "admin", "ADMIN", "Teacher",
+                "Deleted teacher id " + id);
 
         return ResponseEntity.ok(Map.of("message", "Teacher and associated user account deleted successfully"));
     }

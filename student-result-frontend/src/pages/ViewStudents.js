@@ -1,8 +1,13 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import API from "../api/api";
 import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
 import Paper from "@mui/material/Paper";
+import MenuItem from "@mui/material/MenuItem";
+import CircularProgress from "@mui/material/CircularProgress";
+import ListToolbar from "../components/common/ListToolbar";
+import PaginationControls from "../components/common/PaginationControls";
+import usePaginatedList from "../hooks/usePaginatedList";
 import Table from "@mui/material/Table";
 import TableBody from "@mui/material/TableBody";
 import TableCell from "@mui/material/TableCell";
@@ -22,7 +27,11 @@ import EditOutlinedIcon from "@mui/icons-material/EditOutlined";
 import { useToast } from "../components/ToastProvider";
 
 function ViewStudents() {
-  const [students, setStudents] = useState([]);
+  const paginated = usePaginatedList("/students/page", {
+    defaultSize: 10,
+    extraParams: { className: "", section: "" },
+  });
+  const students = paginated.data;
   const [editOpen, setEditOpen] = useState(false);
   const [editingStudent, setEditingStudent] = useState(null);
   const [confirmOpen, setConfirmOpen] = useState(false);
@@ -38,21 +47,6 @@ function ViewStudents() {
     email: "",
     dob: "",
   });
-
-  useEffect(() => {
-    loadStudents();
-  }, []);
-
-  const loadStudents = () => {
-    API.get("/students")
-      .then((res) => {
-        console.log("Students:", res.data);
-        setStudents(res.data || []);
-      })
-      .catch((err) => {
-        console.error("Error fetching students:", err);
-      });
-  };
 
   const openEdit = (student) => {
     setEditingStudent(student);
@@ -112,7 +106,7 @@ function ViewStudents() {
     showToast("Student updated successfully", "success");
     setEditOpen(false);
     setEditingStudent(null);
-    loadStudents();
+    paginated.refresh();
   };
 
   const handleDelete = async (student) => {
@@ -141,7 +135,7 @@ function ViewStudents() {
     showToast("Student deleted successfully", "success");
     setConfirmOpen(false);
     setPendingDelete(null);
-    loadStudents();
+    paginated.refresh();
   };
 
   return (
@@ -150,7 +144,40 @@ function ViewStudents() {
         All Students
       </Typography>
 
-      {students.length === 0 ? (
+      <ListToolbar
+        search={paginated.filters.search}
+        onSearchChange={(v) => paginated.updateFilter("search", v)}
+        onSearch={() => paginated.setPage(0)}
+        onReset={paginated.resetFilters}
+      >
+        <Grid item xs={6} md={2}>
+          <TextField
+            select
+            fullWidth
+            size="small"
+            label="Class"
+            value={paginated.filters.className || ""}
+            onChange={(e) => paginated.updateFilter("className", e.target.value)}
+          >
+            <MenuItem value="">All</MenuItem>
+          </TextField>
+        </Grid>
+        <Grid item xs={6} md={2}>
+          <TextField
+            fullWidth
+            size="small"
+            label="Section"
+            value={paginated.filters.section || ""}
+            onChange={(e) => paginated.updateFilter("section", e.target.value)}
+          />
+        </Grid>
+      </ListToolbar>
+
+      {paginated.loading ? (
+        <Box sx={{ display: "flex", justifyContent: "center", py: 4 }}>
+          <CircularProgress />
+        </Box>
+      ) : students.length === 0 ? (
         <Paper sx={{ p: 3 }}>
           <Typography color="text.secondary">No students found</Typography>
         </Paper>
@@ -227,6 +254,20 @@ function ViewStudents() {
             </TableBody>
           </Table>
         </TableContainer>
+      )}
+
+      {!paginated.loading && students.length > 0 && (
+        <PaginationControls
+          page={paginated.page}
+          totalPages={paginated.totalPages}
+          totalElements={paginated.totalElements}
+          size={paginated.size}
+          onPageChange={paginated.setPage}
+          onSizeChange={(s) => {
+            paginated.setSize(s);
+            paginated.setPage(0);
+          }}
+        />
       )}
 
       {/* Edit Dialog */}

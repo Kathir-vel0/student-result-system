@@ -1,5 +1,9 @@
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import API from "../api/api";
+import usePaginatedList from "../hooks/usePaginatedList";
+import ListToolbar from "../components/common/ListToolbar";
+import PaginationControls from "../components/common/PaginationControls";
+import CircularProgress from "@mui/material/CircularProgress";
 import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
 import Paper from "@mui/material/Paper";
@@ -24,9 +28,8 @@ import EditOutlinedIcon from "@mui/icons-material/EditOutlined";
 import { useToast } from "../components/ToastProvider";
 
 function ViewSubjects() {
-  const [subjects, setSubjects] = useState([]);
-  const [loading, setLoading] = useState(true);
-
+  const paginated = usePaginatedList("/subjects/page", { defaultSize: 10 });
+  const subjects = paginated.data;
   const { showToast } = useToast();
 
   const [editOpen, setEditOpen] = useState(false);
@@ -38,25 +41,6 @@ function ViewSubjects() {
     subjectName: "",
     subjectCode: "",
   });
-
-  const loadSubjects = async () => {
-    setLoading(true);
-    try {
-      const res = await API.get("/subjects/all");
-      setSubjects(res.data || []);
-    } catch (e) {
-      console.error(e);
-      showToast("Unable to load subjects", "error");
-      setSubjects([]);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    loadSubjects();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
 
   const openEdit = (s) => {
     setEditing(s);
@@ -89,7 +73,7 @@ function ViewSubjects() {
       setEditOpen(false);
       setEditing(null);
       setForm({ subjectName: "", subjectCode: "" });
-      loadSubjects();
+      paginated.refresh();
     } catch (e) {
       console.error(e);
       showToast("Unable to update subject", "error");
@@ -116,7 +100,7 @@ function ViewSubjects() {
       showToast("Subject deleted successfully", "success");
       setConfirmOpen(false);
       setPendingDelete(null);
-      loadSubjects();
+      paginated.refresh();
     } catch (e) {
       console.error(e);
       showToast("Unable to delete subject", "error");
@@ -131,9 +115,18 @@ function ViewSubjects() {
         {title}
       </Typography>
 
+      <ListToolbar
+        search={paginated.filters.search}
+        onSearchChange={(v) => paginated.updateFilter("search", v)}
+        onSearch={() => paginated.setPage(0)}
+        onReset={paginated.resetFilters}
+      />
+
       <Paper sx={{ p: 3, borderRadius: 4 }}>
-        {loading ? (
-          <Typography color="text.secondary">Loading...</Typography>
+        {paginated.loading ? (
+          <Box sx={{ display: "flex", justifyContent: "center", py: 4 }}>
+            <CircularProgress />
+          </Box>
         ) : subjects.length === 0 ? (
           <Typography color="text.secondary">No subjects found.</Typography>
         ) : (
@@ -196,6 +189,20 @@ function ViewSubjects() {
           </TableContainer>
         )}
       </Paper>
+
+      {!paginated.loading && subjects.length > 0 && (
+        <PaginationControls
+          page={paginated.page}
+          totalPages={paginated.totalPages}
+          totalElements={paginated.totalElements}
+          size={paginated.size}
+          onPageChange={paginated.setPage}
+          onSizeChange={(s) => {
+            paginated.setSize(s);
+            paginated.setPage(0);
+          }}
+        />
+      )}
 
       {/* Edit Dialog */}
       <Dialog open={editOpen} onClose={() => setEditOpen(false)} maxWidth="sm" fullWidth>

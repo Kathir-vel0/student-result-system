@@ -1,5 +1,9 @@
 import { useEffect, useState } from "react";
 import API from "../api/api";
+import usePaginatedList from "../hooks/usePaginatedList";
+import ListToolbar from "../components/common/ListToolbar";
+import PaginationControls from "../components/common/PaginationControls";
+import CircularProgress from "@mui/material/CircularProgress";
 import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
 import Paper from "@mui/material/Paper";
@@ -30,7 +34,8 @@ import Select from "@mui/material/Select";
 import MenuItem from "@mui/material/MenuItem";
 
 function ViewTeachers() {
-  const [teachers, setTeachers] = useState([]);
+  const paginated = usePaginatedList("/teachers/page", { defaultSize: 10 });
+  const teachers = paginated.data;
   const [subjects, setSubjects] = useState([]);
 
   const [editOpen, setEditOpen] = useState(false);
@@ -62,18 +67,7 @@ function ViewTeachers() {
     }
   };
 
-  const loadTeachers = async () => {
-    try {
-      const res = await API.get("/teachers/all");
-      setTeachers(res.data || []);
-    } catch (e) {
-      console.error("Error fetching teachers:", e);
-      setTeachers([]);
-    }
-  };
-
   useEffect(() => {
-    loadTeachers();
     loadSubjects();
   }, []);
 
@@ -145,7 +139,7 @@ function ViewTeachers() {
     showToast("Teacher updated successfully", "success");
     setEditOpen(false);
     setEditing(null);
-    loadTeachers();
+    paginated.refresh();
   };
 
   const handleResetPassword = async () => {
@@ -200,7 +194,7 @@ function ViewTeachers() {
     showToast("Teacher deleted successfully", "success");
     setConfirmOpen(false);
     setPendingDelete(null);
-    loadTeachers();
+    paginated.refresh();
   };
 
   return (
@@ -209,7 +203,19 @@ function ViewTeachers() {
         All Teachers
       </Typography>
 
-      {teachers.length === 0 ? (
+      <ListToolbar
+        search={paginated.filters.search}
+        onSearchChange={(v) => paginated.updateFilter("search", v)}
+        onSearch={() => paginated.setPage(0)}
+        onReset={paginated.resetFilters}
+        searchPlaceholder="Search name, email, username..."
+      />
+
+      {paginated.loading ? (
+        <Box sx={{ display: "flex", justifyContent: "center", py: 4 }}>
+          <CircularProgress />
+        </Box>
+      ) : teachers.length === 0 ? (
         <Paper sx={{ p: 3 }}>
           <Typography color="text.secondary">No teachers found</Typography>
         </Paper>
@@ -313,6 +319,20 @@ function ViewTeachers() {
             </TableBody>
           </Table>
         </TableContainer>
+      )}
+
+      {!paginated.loading && teachers.length > 0 && (
+        <PaginationControls
+          page={paginated.page}
+          totalPages={paginated.totalPages}
+          totalElements={paginated.totalElements}
+          size={paginated.size}
+          onPageChange={paginated.setPage}
+          onSizeChange={(s) => {
+            paginated.setSize(s);
+            paginated.setPage(0);
+          }}
+        />
       )}
 
       {/* Edit Profile Dialog */}

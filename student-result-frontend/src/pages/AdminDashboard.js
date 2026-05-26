@@ -19,6 +19,7 @@ import AssignmentTurnedInIcon from "@mui/icons-material/AssignmentTurnedIn";
 import PersonAddAlt1Icon from "@mui/icons-material/PersonAddAlt1";
 import AdminPanelSettingsIcon from "@mui/icons-material/AdminPanelSettings";
 import SchoolIcon from "@mui/icons-material/School";
+import AdminAnalytics from "../components/analytics/AdminAnalytics";
 
 function AdminDashboard() {
   const navigate = useNavigate();
@@ -251,6 +252,7 @@ function AdminDashboard() {
         </Box>
       </Fade>
 
+      <AdminAnalytics />
     </Box>
   );
 }

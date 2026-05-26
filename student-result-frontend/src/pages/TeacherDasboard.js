@@ -20,6 +20,7 @@ import MenuBookIcon from "@mui/icons-material/MenuBook";
 import PostAddIcon from "@mui/icons-material/PostAdd";
 import AccountCircleIcon from "@mui/icons-material/AccountCircle";
 import FactCheckIcon from "@mui/icons-material/FactCheck";
+import TeacherAnalytics from "../components/analytics/TeacherAnalytics";
 
 function TeacherDashboard() {
   const navigate = useNavigate();
@@ -202,6 +203,8 @@ function TeacherDashboard() {
           </Fade>
         </Grid>
       </Grid>
+
+      <TeacherAnalytics />
     </Box>
   );
 }

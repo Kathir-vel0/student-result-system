@@ -16,6 +16,8 @@ import PeopleAltIcon from "@mui/icons-material/PeopleAlt";
 import PostAddIcon from "@mui/icons-material/PostAdd";
 import AssignmentTurnedInIcon from "@mui/icons-material/AssignmentTurnedIn";
 import AccountCircleIcon from "@mui/icons-material/AccountCircle";
+import EventAvailableIcon from "@mui/icons-material/EventAvailable";
+import HistoryIcon from "@mui/icons-material/History";
 
 function Sidebar() {
   const role = localStorage.getItem("role");
@@ -29,21 +31,26 @@ function Sidebar() {
           { label: "Add Student", to: "/add-student", icon: <PersonAddIcon /> },
           { label: "Add Teacher", to: "/add-teacher", icon: <PersonAddIcon /> },
           { label: "Add Subject", to: "/add-subject", icon: <SchoolIcon /> },
+          { label: "View Subjects", to: "/view-subjects", icon: <SchoolIcon /> },
           { label: "View Students", to: "/view-students", icon: <PeopleAltIcon /> },
           { label: "View Teachers", to: "/view-teachers", icon: <AccountCircleIcon /> },
           { label: "View Results", to: "/view-results", icon: <AssignmentTurnedInIcon /> },
+          { label: "Attendance", to: "/attendance", icon: <EventAvailableIcon /> },
+          { label: "Audit Logs", to: "/audit-logs", icon: <HistoryIcon /> },
         ]
       : role === "TEACHER"
       ? [
           { label: "Dashboard", to: "/teacher", icon: <DashboardIcon /> },
           { label: "View Students", to: "/view-students", icon: <PeopleAltIcon /> },
           { label: "Add Marks", to: "/add-result", icon: <PostAddIcon /> },
+          { label: "Attendance", to: "/attendance", icon: <EventAvailableIcon /> },
           { label: "Profile", to: "/teacher-profile", icon: <AccountCircleIcon /> },
         ]
       : role === "STUDENT"
       ? [
           { label: "Dashboard", to: "/student", icon: <DashboardIcon /> },
           { label: "My Results", to: "/result", icon: <AssignmentTurnedInIcon /> },
+          { label: "Attendance", to: "/attendance", icon: <EventAvailableIcon /> },
           { label: "Profile", to: "/view-profile", icon: <AccountCircleIcon /> },
         ]
       : [];

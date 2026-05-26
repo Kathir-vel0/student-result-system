@@ -23,6 +23,8 @@ import ViewResults from "./pages/ViewResults";
 import ViewTeachers from "./pages/ViewTeachers";
 import ViewSubjects from "./pages/ViewSubjects";
 import Result from "./pages/Result";
+import AttendanceManagement from "./pages/AttendanceManagement";
+import AuditLogs from "./pages/AuditLogs";
 
 function App() {
   return (
@@ -46,6 +48,8 @@ function App() {
             <Route path="view-teachers" element={<ViewTeachers />} />
             <Route path="view-subjects" element={<ViewSubjects />} />
             <Route path="view-results" element={<ViewResults />} />
+            <Route path="attendance" element={<AttendanceManagement />} />
+            <Route path="audit-logs" element={<AuditLogs />} />
           </Route>
 
           {/* 🛡️ TEACHER ONLY ROUTES */}
@@ -53,6 +57,7 @@ function App() {
             <Route path="teacher" element={<TeacherDashboard />} />
             <Route path="teacher-profile" element={<TeacherProfile />} />
             <Route path="add-result" element={<AddResult />} />
+            <Route path="attendance" element={<AttendanceManagement />} />
           </Route>
 
           {/* 🛡️ STUDENT ONLY ROUTES */}
@@ -60,6 +65,7 @@ function App() {
             <Route path="student" element={<StudentDashboard />} />
             <Route path="result" element={<Result />} />
             <Route path="view-profile" element={<ViewProfile />} />
+            <Route path="attendance" element={<AttendanceManagement />} />
           </Route>
 
           {/* 🛡️ SHARED ROUTES */}

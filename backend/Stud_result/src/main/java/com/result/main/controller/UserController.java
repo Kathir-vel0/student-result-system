@@ -14,6 +14,7 @@ import com.result.main.entity.User;
 import com.result.main.entity.Role;
 import com.result.main.repository.UserRepository;
 import com.result.main.config.JwtUtils;
+import com.result.main.service.AuditService;
 
 @RestController
 @RequestMapping("/api/users")
@@ -22,11 +23,14 @@ public class UserController {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtUtils jwtUtils;
+    private final AuditService auditService;
 
-    public UserController(UserRepository userRepository, PasswordEncoder passwordEncoder, JwtUtils jwtUtils) {
+    public UserController(UserRepository userRepository, PasswordEncoder passwordEncoder,
+                          JwtUtils jwtUtils, AuditService auditService) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
         this.jwtUtils = jwtUtils;
+        this.auditService = auditService;
     }
 
     // Helper method to detect if a password in the DB is already BCrypt hashed
@@ -132,6 +136,14 @@ public class UserController {
                 response.put("username", user.getUsername());
                 response.put("message", "Login Successful");
 
+                auditService.log(
+                        roleString + "_LOGIN",
+                        username,
+                        roleString,
+                        "User",
+                        "Successful login for user: " + username
+                );
+
                 return ResponseEntity.ok(response);
             } else {
                 System.out.println("❌ Login failed: Password mismatch for user: " + username);
@@ -165,6 +177,9 @@ public class UserController {
         user.setPassword(passwordEncoder.encode(newPassword));
         userRepository.save(user);
         System.out.println("✅ Reset successful. Password hashed for user: " + username);
+
+        auditService.log("PASSWORD_RESET", "admin", "ADMIN", "User",
+                "Password reset for user: " + username);
 
         return ResponseEntity.ok(Map.of("message", "Password reset successful for user: " + username));
     }

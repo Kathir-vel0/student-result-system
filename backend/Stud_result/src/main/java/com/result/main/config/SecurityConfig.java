@@ -36,46 +36,56 @@ public class SecurityConfig {
             .csrf(csrf -> csrf.disable())
             .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .authorizeHttpRequests(auth -> auth
-                // Public authentication and student self-registration
                 .requestMatchers(HttpMethod.POST, "/api/users/login").permitAll()
-                .requestMatchers(HttpMethod.POST, "/api/users").permitAll() // Public student register route
-                
-                // Allow error endpoints
+                .requestMatchers(HttpMethod.POST, "/api/users").permitAll()
                 .requestMatchers("/error").permitAll()
-                
-                // ADMIN ONLY actions (Admin Panel for Teachers)
+
+                // Admin only
                 .requestMatchers("/api/teachers/create-full").hasRole("ADMIN")
                 .requestMatchers("/api/teachers/delete/**").hasRole("ADMIN")
                 .requestMatchers("/api/teachers/update/**").hasRole("ADMIN")
                 .requestMatchers("/api/teachers/add").hasRole("ADMIN")
                 .requestMatchers("/api/users/admin/reset-password").hasRole("ADMIN")
                 .requestMatchers("/api/users/admin/**").hasRole("ADMIN")
-                
-                // Teacher list is Admin only (except profile fetching)
                 .requestMatchers(HttpMethod.GET, "/api/teachers/all").hasRole("ADMIN")
-                
-                // Profile endpoints (Any authenticated user can fetch their own profile)
-                .requestMatchers("/api/teachers/user/**").hasAnyRole("TEACHER", "ADMIN")
-                .requestMatchers("/api/students/user/**").hasAnyRole("STUDENT", "ADMIN", "TEACHER")
-                
-                // Subject management (Admin only)
+                .requestMatchers(HttpMethod.GET, "/api/users").hasRole("ADMIN")
                 .requestMatchers("/api/subjects/add").hasRole("ADMIN")
                 .requestMatchers("/api/subjects/delete/**").hasRole("ADMIN")
+                .requestMatchers("/api/analytics/admin").hasRole("ADMIN")
+                .requestMatchers("/api/audit/**").hasRole("ADMIN")
+                .requestMatchers(HttpMethod.POST, "/api/results/publish").hasRole("ADMIN")
+                .requestMatchers("/api/teachers/page").hasRole("ADMIN")
+                .requestMatchers("/api/attendance/analytics").hasAnyRole("ADMIN", "TEACHER")
+
+                // Teacher
+                .requestMatchers(HttpMethod.POST, "/api/results/add").hasRole("TEACHER")
+                .requestMatchers(HttpMethod.PUT, "/api/results/update/**").hasRole("TEACHER")
+                .requestMatchers("/api/analytics/teacher").hasRole("TEACHER")
+                .requestMatchers("/api/attendance/mark").hasAnyRole("ADMIN", "TEACHER")
+                .requestMatchers("/api/attendance/bulk").hasAnyRole("ADMIN", "TEACHER")
+                .requestMatchers("/api/teachers/subjects").hasRole("TEACHER")
+                .requestMatchers("/api/teachers/dashboard-stats").hasRole("TEACHER")
+
+                // Student
+                .requestMatchers("/api/analytics/student/**").hasAnyRole("STUDENT", "ADMIN", "TEACHER")
+                .requestMatchers("/api/analytics/report-card/**").hasAnyRole("STUDENT", "ADMIN", "TEACHER")
+                .requestMatchers("/api/attendance/student/**").hasAnyRole("STUDENT", "ADMIN", "TEACHER")
+
+                // Shared authenticated
+                .requestMatchers("/api/teachers/user/**").hasAnyRole("TEACHER", "ADMIN")
+                .requestMatchers("/api/students/user/**").hasAnyRole("STUDENT", "ADMIN", "TEACHER")
                 .requestMatchers("/api/subjects/all").hasAnyRole("ADMIN", "TEACHER")
-                
-                // Student management
                 .requestMatchers("/api/students").hasAnyRole("ADMIN", "TEACHER")
                 .requestMatchers(HttpMethod.POST, "/api/students/user/**").hasAnyRole("ADMIN", "STUDENT")
                 .requestMatchers("/api/students/**").hasAnyRole("ADMIN", "TEACHER")
-                
-                // Results endpoints
-                .requestMatchers(HttpMethod.POST, "/api/results/add").hasRole("TEACHER")
-                .requestMatchers(HttpMethod.PUT, "/api/results/update/**").hasRole("TEACHER")
+                .requestMatchers("/api/students/page").hasAnyRole("ADMIN", "TEACHER")
                 .requestMatchers("/api/results/student/**").hasAnyRole("STUDENT", "ADMIN", "TEACHER")
                 .requestMatchers("/api/results/all").hasAnyRole("ADMIN", "TEACHER")
-                .requestMatchers("/api/results/**").hasAnyRole("ADMIN", "TEACHER", "STUDENT")
-                
-                // Default fallback
+                .requestMatchers("/api/results/page").hasAnyRole("ADMIN", "TEACHER")
+                .requestMatchers("/api/results/**").hasAnyRole("ADMIN", "TEACHER")
+                .requestMatchers("/api/subjects/page").hasAnyRole("ADMIN", "TEACHER")
+                .requestMatchers("/api/attendance/page").hasAnyRole("ADMIN", "TEACHER")
+
                 .anyRequest().authenticated()
             )
             .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);

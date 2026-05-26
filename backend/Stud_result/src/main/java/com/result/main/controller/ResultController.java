@@ -48,6 +48,9 @@ public class ResultController {
     private SubjectRepository subjectRepository;
     @Autowired
     private JavaMailSender javaMailSender;
+
+    @Autowired
+    private com.result.main.service.AuditService auditService;
     @Value("${spring.mail.username:}")
     private String fromEmail;
     @Value("${spring.mail.password:}")
@@ -90,7 +93,11 @@ public class ResultController {
         // Results are unpublished by default when added/updated by teacher
         result.setPublished(false);
 
-        return resultRepository.save(result);
+        Result saved = resultRepository.save(result);
+        auditService.log(existing.isPresent() ? "MARKS_UPDATED" : "MARKS_ADDED",
+                "teacher", "TEACHER", "Result",
+                "Marks for student " + request.getStudentId() + " subject " + request.getSubjectCode());
+        return saved;
     }
 
     // VIEW BY STUDENT
@@ -112,7 +119,10 @@ public class ResultController {
             r.setStudent(updatedResult.getStudent());
             r.setComments(updatedResult.getComments());
             r.setPublished(false); // Unpublish on update
-            return resultRepository.save(r);
+            Result saved = resultRepository.save(r);
+            auditService.log("MARKS_UPDATED", "teacher", "TEACHER", "Result",
+                    "Updated result id " + id);
+            return saved;
         } else {
             return null;
         }
@@ -196,7 +206,10 @@ public class ResultController {
             resp.put("failed", failed);
             resp.put("totalAttempted", success + failed);
             resp.put("message", "Results published successfully in the database.");
-            
+
+            auditService.log("RESULTS_PUBLISHED", "admin", "ADMIN", "Result",
+                    "Published results for class " + request.getClassName() + " (" + success + " students)");
+
             return ResponseEntity.ok(resp);
         } catch (Exception e) {
             resp.put("message", "Publish failed: " + e.getMessage());

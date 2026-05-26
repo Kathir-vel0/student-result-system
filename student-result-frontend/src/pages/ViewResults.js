@@ -20,6 +20,7 @@ import DialogTitle from "@mui/material/DialogTitle";
 import DialogContent from "@mui/material/DialogContent";
 import DialogActions from "@mui/material/DialogActions";
 import { useToast } from "../components/ToastProvider";
+import DownloadReportCardButton from "../components/common/DownloadReportCardButton";
 
 function ViewResults() {
   const { showToast } = useToast();
@@ -481,6 +482,11 @@ function ViewResults() {
           </TableContainer>
         </DialogContent>
         <DialogActions>
+          <DownloadReportCardButton
+            studentId={selectedStudent?.student?.studentId}
+            variant="outlined"
+            size="small"
+          />
           <Button onClick={closeDialog}>Close</Button>
         </DialogActions>
       </Dialog>

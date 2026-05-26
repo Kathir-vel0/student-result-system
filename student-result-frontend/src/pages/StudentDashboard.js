@@ -25,13 +25,15 @@ import TrendingUpIcon from "@mui/icons-material/TrendingUp";
 import MenuBookIcon from "@mui/icons-material/MenuBook";
 import AccountCircleIcon from "@mui/icons-material/AccountCircle";
 import EmojiEventsIcon from "@mui/icons-material/EmojiEvents";
+import StudentAnalytics from "../components/analytics/StudentAnalytics";
+import DownloadReportCardButton from "../components/common/DownloadReportCardButton";
 
 function StudentDashboard() {
+  const studentId = localStorage.getItem("studentId");
   const [results, setResults] = useState([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const studentId = localStorage.getItem("studentId");
     if (!studentId) {
       setResults([]);
       setLoading(false);
@@ -48,7 +50,7 @@ function StudentDashboard() {
         setResults([]);
       })
       .finally(() => setLoading(false));
-  }, []);
+  }, [studentId]);
 
   const gradeToChip = (grade) => {
     const g = String(grade || "").toUpperCase();
@@ -121,6 +123,9 @@ function StudentDashboard() {
           <Typography variant="body1" color="text.secondary" sx={{ mt: 0.5, fontSize: { xs: "0.95rem", sm: "1rem" } }}>
             Welcome back! Here's an overview of your academic performance.
           </Typography>
+          <Box sx={{ mt: 2 }}>
+            <DownloadReportCardButton studentId={studentId} />
+          </Box>
         </Box>
       </Fade>
 
@@ -291,6 +296,8 @@ function StudentDashboard() {
           </Fade>
         </Grid>
       </Grid>
+
+      <StudentAnalytics studentId={studentId} />
     </Box>
   );
 }
