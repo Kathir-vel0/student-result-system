@@ -46,12 +46,9 @@ function TeacherProfile() {
           return;
         }
 
-        // backend doesn't expose "teacher by userId"; fetch all and match by user.id
-        const teachersRes = await API.get("/teachers/all");
-        const allTeachers = teachersRes.data || [];
-        const data = allTeachers.find(
-          (t) => String(t?.user?.id) === String(userId)
-        );
+        // 🔹 Securely fetch this specific teacher's profile
+        const res = await API.get(`/teachers/user/${userId}`);
+        const data = res.data;
 
         if (!cancelled) {
           setTeacher(data);

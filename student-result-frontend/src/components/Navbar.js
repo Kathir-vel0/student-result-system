@@ -54,7 +54,7 @@ function Navbar() {
 
   const profileRoute = role === "TEACHER" ? "/teacher-profile" : "/view-profile";
   const isAdmin = role === "ADMIN";
-  const showNavbarLogout = isAdmin;
+  const showNavbarLogout = !!role;
 
   return (
     <AppBar

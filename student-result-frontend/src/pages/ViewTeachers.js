@@ -17,9 +17,11 @@ import DialogActions from "@mui/material/DialogActions";
 import TextField from "@mui/material/TextField";
 import Button from "@mui/material/Button";
 import Grid from "@mui/material/Grid";
+import Tooltip from "@mui/material/Tooltip";
 
 import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
 import EditOutlinedIcon from "@mui/icons-material/EditOutlined";
+import VpnKeyOutlinedIcon from "@mui/icons-material/VpnKeyOutlined";
 import { useToast } from "../components/ToastProvider";
 
 import FormControl from "@mui/material/FormControl";
@@ -35,6 +37,12 @@ function ViewTeachers() {
   const [editing, setEditing] = useState(null);
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [pendingDelete, setPendingDelete] = useState(null);
+  
+  // Password Reset States
+  const [resetOpen, setResetOpen] = useState(false);
+  const [resetTeacher, setResetTeacher] = useState(null);
+  const [newPassword, setNewPassword] = useState("");
+
   const [form, setForm] = useState({
     name: "",
     email: "",
@@ -79,6 +87,12 @@ function ViewTeachers() {
       subjectId: String(t?.subject?.id || t?.subjectId || "") || "",
     });
     setEditOpen(true);
+  };
+
+  const openResetPassword = (t) => {
+    setResetTeacher(t);
+    setNewPassword("");
+    setResetOpen(true);
   };
 
   const handleChange = (e) => {
@@ -132,6 +146,32 @@ function ViewTeachers() {
     setEditOpen(false);
     setEditing(null);
     loadTeachers();
+  };
+
+  const handleResetPassword = async () => {
+    if (!resetTeacher || !resetTeacher.user?.username) {
+      showToast("Teacher user account not found", "error");
+      return;
+    }
+
+    if (!newPassword || newPassword.trim().isEmpty) {
+      showToast("Please enter a new password", "warning");
+      return;
+    }
+
+    try {
+      await API.post("/users/admin/reset-password", {
+        username: resetTeacher.user.username,
+        newPassword: newPassword
+      });
+      showToast(`Password successfully reset for teacher user: ${resetTeacher.user.username}`, "success");
+      setResetOpen(false);
+      setResetTeacher(null);
+    } catch (e) {
+      console.error(e);
+      const errorMsg = e.response?.data?.message || "Error resetting password";
+      showToast(errorMsg, "error");
+    }
   };
 
   const handleDelete = async (t) => {
@@ -189,6 +229,9 @@ function ViewTeachers() {
                   ID
                 </TableCell>
                 <TableCell align="center" sx={{ fontWeight: 900 }}>
+                  Username
+                </TableCell>
+                <TableCell align="center" sx={{ fontWeight: 900 }}>
                   Name
                 </TableCell>
                 <TableCell align="center" sx={{ fontWeight: 900 }}>
@@ -224,26 +267,45 @@ function ViewTeachers() {
                     sx={{ "&:last-child td, &:last-child th": { border: 0 } }}
                   >
                     <TableCell align="center">{t.id}</TableCell>
+                    <TableCell align="center" sx={{ fontWeight: "bold" }}>
+                      {t.user?.username || "N/A"}
+                    </TableCell>
                     <TableCell align="center">{t.name || "N/A"}</TableCell>
                     <TableCell align="center">{t.email || "N/A"}</TableCell>
                     <TableCell align="center">{t.phone || "N/A"}</TableCell>
                     <TableCell align="center">{t.status || "N/A"}</TableCell>
                     <TableCell align="center">{subject}</TableCell>
                     <TableCell align="center">
-                      <IconButton
-                        size="small"
-                        onClick={() => openEdit(t)}
-                        aria-label="Edit"
-                      >
-                        <EditOutlinedIcon fontSize="small" />
-                      </IconButton>
-                      <IconButton
-                        size="small"
-                        onClick={() => handleDelete(t)}
-                        aria-label="Delete"
-                      >
-                        <DeleteOutlineIcon fontSize="small" />
-                      </IconButton>
+                      <Tooltip title="Edit Profile Details">
+                        <IconButton
+                          size="small"
+                          onClick={() => openEdit(t)}
+                          aria-label="Edit"
+                          color="primary"
+                        >
+                          <EditOutlinedIcon fontSize="small" />
+                        </IconButton>
+                      </Tooltip>
+                      <Tooltip title="Reset Teacher Password">
+                        <IconButton
+                          size="small"
+                          onClick={() => openResetPassword(t)}
+                          aria-label="Reset Password"
+                          color="warning"
+                        >
+                          <VpnKeyOutlinedIcon fontSize="small" />
+                        </IconButton>
+                      </Tooltip>
+                      <Tooltip title="Delete Teacher & Account">
+                        <IconButton
+                          size="small"
+                          onClick={() => handleDelete(t)}
+                          aria-label="Delete"
+                          color="error"
+                        >
+                          <DeleteOutlineIcon fontSize="small" />
+                        </IconButton>
+                      </Tooltip>
                     </TableCell>
                   </TableRow>
                 );
@@ -253,13 +315,14 @@ function ViewTeachers() {
         </TableContainer>
       )}
 
+      {/* Edit Profile Dialog */}
       <Dialog
         open={editOpen}
         onClose={() => setEditOpen(false)}
         maxWidth="sm"
         fullWidth
       >
-        <DialogTitle sx={{ fontWeight: 900 }}>Edit Teacher</DialogTitle>
+        <DialogTitle sx={{ fontWeight: 900 }}>Edit Teacher Details</DialogTitle>
         <DialogContent>
           <Grid container spacing={2} sx={{ mt: 0.5 }}>
             <Grid item xs={12} md={6}>
@@ -341,6 +404,51 @@ function ViewTeachers() {
         </DialogActions>
       </Dialog>
 
+      {/* Password Reset Dialog */}
+      <Dialog
+        open={resetOpen}
+        onClose={() => {
+          setResetOpen(false);
+          setResetTeacher(null);
+        }}
+        maxWidth="xs"
+        fullWidth
+      >
+        <DialogTitle sx={{ fontWeight: 900 }}>Reset Password</DialogTitle>
+        <DialogContent>
+          <Typography color="text.secondary" sx={{ mb: 2 }}>
+            Reset password for teacher account: <strong>{resetTeacher?.user?.username}</strong>
+          </Typography>
+          <TextField
+            fullWidth
+            required
+            type="password"
+            label="New Password"
+            value={newPassword}
+            onChange={(e) => setNewPassword(e.target.value)}
+            sx={{ mt: 1 }}
+          />
+        </DialogContent>
+        <DialogActions>
+          <Button
+            onClick={() => {
+              setResetOpen(false);
+              setResetTeacher(null);
+            }}
+          >
+            Cancel
+          </Button>
+          <Button
+            variant="contained"
+            color="warning"
+            onClick={handleResetPassword}
+            sx={{ borderRadius: 3 }}
+          >
+            Reset Password
+          </Button>
+        </DialogActions>
+      </Dialog>
+
       {/* Delete Confirm Dialog */}
       <Dialog
         open={confirmOpen}
@@ -354,8 +462,12 @@ function ViewTeachers() {
         <DialogTitle sx={{ fontWeight: 900 }}>Confirm Delete</DialogTitle>
         <DialogContent>
           <Typography color="text.secondary">
-            Delete teacher "
-            {pendingDelete?.name || pendingDelete?.email || ""}"?
+            Are you sure you want to delete teacher <strong>{pendingDelete?.name || pendingDelete?.email || ""}</strong>?
+            <br />
+            <br />
+            <span style={{ color: "red", fontWeight: "bold" }}>
+              WARNING: This will permanently delete the teacher profile and their corresponding login user account. This action cannot be undone.
+            </span>
           </Typography>
         </DialogContent>
         <DialogActions>
@@ -369,10 +481,11 @@ function ViewTeachers() {
           </Button>
           <Button
             variant="contained"
+            color="error"
             onClick={confirmDelete}
             sx={{ borderRadius: 3 }}
           >
-            Delete
+            Permanently Delete
           </Button>
         </DialogActions>
       </Dialog>
@@ -381,4 +494,3 @@ function ViewTeachers() {
 }
 
 export default ViewTeachers;
-

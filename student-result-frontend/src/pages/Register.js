@@ -7,20 +7,16 @@ import Typography from "@mui/material/Typography";
 import TextField from "@mui/material/TextField";
 import Button from "@mui/material/Button";
 import Divider from "@mui/material/Divider";
-import FormControl from "@mui/material/FormControl";
-import InputLabel from "@mui/material/InputLabel";
-import Select from "@mui/material/Select";
-import MenuItem from "@mui/material/MenuItem";
 import { useToast } from "../components/ToastProvider";
 
 function Register() {
   const { showToast } = useToast();
   const navigate = useNavigate();
 
+  // 🔹 Omit the "role" field from initial state to prevent sending it to the backend.
   const [user, setUser] = useState({
     username: "",
-    password: "",
-    role: "STUDENT"
+    password: ""
   });
 
   const handleChange = (e) => {
@@ -30,13 +26,24 @@ function Register() {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
+    if (!user.username || !user.password) {
+      showToast("Please enter both username and password.", "warning");
+      return;
+    }
+
     try {
-      await API.post("/users", user);
-      showToast("User Registered Successfully. You can now login.", "success");
+      // 🔹 Sending credentials without role field. Role is securely assigned by backend.
+      await API.post("/users", {
+        username: user.username,
+        password: user.password
+      });
+      
+      showToast("User Registered Successfully as Student. You can now login.", "success");
       navigate("/login");
     } catch (error) {
       console.error(error);
-      showToast("Error registering user", "error");
+      const errorMsg = error.response?.data?.message || "Error registering user";
+      showToast(errorMsg, "error");
     }
   };
 
@@ -79,7 +86,7 @@ function Register() {
             Create Account
           </Typography>
           <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
-            Register to join the portal and manage results.
+            Register to join the student portal.
           </Typography>
         </Box>
 
@@ -101,22 +108,8 @@ function Register() {
             value={user.password}
             onChange={handleChange}
             required
-            sx={{ mb: 2.5 }}
+            sx={{ mb: 3 }}
           />
-
-          <FormControl fullWidth sx={{ mb: 3 }}>
-            <InputLabel id="register-role-label">Platform Role</InputLabel>
-            <Select
-              labelId="register-role-label"
-              name="role"
-              label="Platform Role"
-              value={user.role}
-              onChange={handleChange}
-            >
-              <MenuItem value="STUDENT">Student</MenuItem>
-              <MenuItem value="TEACHER">Teacher</MenuItem>
-            </Select>
-          </FormControl>
 
           <Button
             type="submit"

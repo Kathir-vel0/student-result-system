@@ -1,6 +1,7 @@
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 
 import Layout from "./components/Layout";
+import ProtectedRoute from "./components/ProtectedRoute";
 
 import Home from "./pages/Home";
 import Login from "./pages/Login";
@@ -36,27 +37,35 @@ function App() {
         {/* 🔐 DASHBOARD (WITH SIDEBAR + NAVBAR) */}
         <Route path="/" element={<Layout />}>
 
-          {/* DASHBOARDS */}
-          <Route path="admin" element={<AdminDashboard />} />
-          <Route path="teacher" element={<TeacherDashboard />} />
-          <Route path="student" element={<StudentDashboard />} />
+          {/* 🛡️ ADMIN ONLY ROUTES */}
+          <Route element={<ProtectedRoute allowedRoles={["ADMIN"]} />}>
+            <Route path="admin" element={<AdminDashboard />} />
+            <Route path="add-student" element={<AddStudent />} />
+            <Route path="add-teacher" element={<AddTeacher />} />
+            <Route path="add-subject" element={<AddSubject />} />
+            <Route path="view-teachers" element={<ViewTeachers />} />
+            <Route path="view-subjects" element={<ViewSubjects />} />
+            <Route path="view-results" element={<ViewResults />} />
+          </Route>
 
-          {/* ADMIN FEATURES */}
-          <Route path="add-student" element={<AddStudent />} />
-          <Route path="add-teacher" element={<AddTeacher />} />
-          <Route path="add-subject" element={<AddSubject />} />
-          <Route path="view-students" element={<ViewStudents />} />
-          <Route path="view-teachers" element={<ViewTeachers />} />
-          <Route path="view-subjects" element={<ViewSubjects />} />
+          {/* 🛡️ TEACHER ONLY ROUTES */}
+          <Route element={<ProtectedRoute allowedRoles={["TEACHER"]} />}>
+            <Route path="teacher" element={<TeacherDashboard />} />
+            <Route path="teacher-profile" element={<TeacherProfile />} />
+            <Route path="add-result" element={<AddResult />} />
+          </Route>
 
-          {/* RESULTS */}
-          <Route path="add-result" element={<AddResult />} />
-          <Route path="view-results" element={<ViewResults />} />
-          <Route path="result" element={<Result />} />
+          {/* 🛡️ STUDENT ONLY ROUTES */}
+          <Route element={<ProtectedRoute allowedRoles={["STUDENT"]} />}>
+            <Route path="student" element={<StudentDashboard />} />
+            <Route path="result" element={<Result />} />
+            <Route path="view-profile" element={<ViewProfile />} />
+          </Route>
 
-          {/* PROFILE */}
-          <Route path="view-profile" element={<ViewProfile />} />
-          <Route path="teacher-profile" element={<TeacherProfile />} />
+          {/* 🛡️ SHARED ROUTES */}
+          <Route element={<ProtectedRoute allowedRoles={["ADMIN", "TEACHER"]} />}>
+            <Route path="view-students" element={<ViewStudents />} />
+          </Route>
 
         </Route>
 

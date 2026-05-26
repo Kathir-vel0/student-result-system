@@ -27,28 +27,21 @@ function Login() {
 
     try {
       const res = await API.post("/users/login", login);
-      console.log("Login Response:", res.data);
-      showToast(String(res.data), "info");
+      const { token, role, userId, username } = res.data;
 
-      const idMatch = res.data.match(/id:(\d+)/);
-      let userId = null;
+      // 🔹 Securely persist JWT session tokens and user context
+      localStorage.setItem("token", token);
+      localStorage.setItem("role", role);
+      localStorage.setItem("userId", userId);
+      localStorage.setItem("username", username);
 
-      if (idMatch) {
-        userId = idMatch[1];
-        localStorage.setItem("userId", userId);
-      } else {
-        console.log("User ID not found");
-      }
+      showToast(`Welcome back, ${username}! Login successful.`, "success");
 
-      if (res.data.includes("ADMIN")) {
-        localStorage.setItem("role", "ADMIN");
+      if (role === "ADMIN") {
         navigate("/admin");
-      } else if (res.data.includes("TEACHER")) {
-        localStorage.setItem("role", "TEACHER");
+      } else if (role === "TEACHER") {
         navigate("/teacher");
-      } else if (res.data.includes("STUDENT") && userId) {
-        localStorage.setItem("role", "STUDENT");
-
+      } else if (role === "STUDENT") {
         try {
           console.log("Fetching studentId for user:", userId);
           const studentRes = await API.get(`/students/user/${userId}`);
@@ -56,18 +49,18 @@ function Login() {
           localStorage.setItem("studentId", studentRes.data.studentId);
         } catch (err) {
           console.error("Error fetching studentId:", err);
-          showToast("Student data not found", "error");
+          showToast("Student profile not found. Please contact the administrator.", "error");
           return;
         }
-
         navigate("/student");
       } else {
-        showToast("Invalid Username or Password", "error");
+        showToast("Invalid role profile encountered.", "error");
       }
 
     } catch (error) {
       console.error("Login Error:", error);
-      showToast("Login failed", "error");
+      const errorMsg = error.response?.data?.message || "Invalid Username or Password";
+      showToast(errorMsg, "error");
     }
   };
 
