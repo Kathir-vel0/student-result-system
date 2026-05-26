@@ -34,6 +34,9 @@ public class TeacherController {
     @Autowired
     private PasswordEncoder passwordEncoder;
 
+    @Autowired
+    private com.result.main.repository.StudentRepository studentRepository;
+
     // 🔹 UNIFIED FLOW: CREATE USER + TEACHER PROFILE (Admin only)
     @PostMapping("/create-full")
     public ResponseEntity<?> createTeacherFull(@RequestBody Map<String, Object> payload) {
@@ -190,5 +193,69 @@ public class TeacherController {
         }
 
         return ResponseEntity.ok(Map.of("message", "Teacher and associated user account deleted successfully"));
+    }
+
+    // 🔹 GET SUBJECTS ASSIGNED TO LOGGED-IN TEACHER
+    @GetMapping("/subjects")
+    public ResponseEntity<?> getLoggedTeacherSubjects(java.security.Principal principal) {
+        if (principal == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of("message", "Unauthorized"));
+        }
+        
+        System.out.println("🔍 GET /subjects requested by teacher: " + principal.getName());
+        
+        Optional<User> userOpt = userRepository.findByUsername(principal.getName());
+        if (userOpt.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of("message", "User not found"));
+        }
+        
+        Optional<Teacher> teacherOpt = teacherRepository.findByUser(userOpt.get());
+        if (teacherOpt.isEmpty()) {
+            return ResponseEntity.ok(List.of());
+        }
+        
+        Teacher teacher = teacherOpt.get();
+        Subject subject = teacher.getSubject();
+        
+        if (subject != null) {
+            Map<String, Object> subjectMap = new java.util.HashMap<>();
+            subjectMap.put("id", subject.getId());
+            subjectMap.put("name", subject.getSubjectName());
+            subjectMap.put("subjectName", subject.getSubjectName());
+            subjectMap.put("subjectCode", subject.getSubjectCode());
+            return ResponseEntity.ok(List.of(subjectMap));
+        }
+        
+        return ResponseEntity.ok(List.of());
+    }
+
+    // 🔹 GET DASHBOARD STATS FOR LOGGED-IN TEACHER
+    @GetMapping("/dashboard-stats")
+    public ResponseEntity<?> getTeacherDashboardStats(java.security.Principal principal) {
+        if (principal == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of("message", "Unauthorized"));
+        }
+        
+        System.out.println("🔍 GET /dashboard-stats requested by: " + principal.getName());
+        
+        Optional<User> userOpt = userRepository.findByUsername(principal.getName());
+        if (userOpt.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of("message", "User not found"));
+        }
+        
+        Optional<Teacher> teacherOpt = teacherRepository.findByUser(userOpt.get());
+        
+        int assignedCount = 0;
+        if (teacherOpt.isPresent() && teacherOpt.get().getSubject() != null) {
+            assignedCount = 1;
+        }
+        
+        long totalStudents = studentRepository.count();
+        
+        Map<String, Object> stats = new java.util.HashMap<>();
+        stats.put("assignedSubjects", assignedCount);
+        stats.put("totalStudents", totalStudents);
+        
+        return ResponseEntity.ok(stats);
     }
 }

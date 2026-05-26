@@ -13,6 +13,9 @@ import TableCell from "@mui/material/TableCell";
 import TableContainer from "@mui/material/TableContainer";
 import TableHead from "@mui/material/TableHead";
 import TableRow from "@mui/material/TableRow";
+import Divider from "@mui/material/Divider";
+import Alert from "@mui/material/Alert";
+import CircularProgress from "@mui/material/CircularProgress";
 
 import { useToast } from "../components/ToastProvider";
 
@@ -44,50 +47,57 @@ const calculateGrade = (marks) => {
 function AddResult() {
   const { showToast } = useToast();
   const role = localStorage.getItem("role");
+  
   const [subjects, setSubjects] = useState([]);
   const [allStudents, setAllStudents] = useState([]);
+  const [loading, setLoading] = useState(true);
 
   const [selectedSubjectCode, setSelectedSubjectCode] = useState("");
   const [selectedClassName, setSelectedClassName] = useState("");
 
   const [studentsForClass, setStudentsForClass] = useState([]);
-  // Keyed by `student.studentId` (this is what backend expects in /results/add)
   const [entries, setEntries] = useState({});
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
-    // Fetch subjects + students once; "Search" just filters by class.
-    API.get("/students")
-      .then((res) => {
-        setAllStudents(res.data || []);
-      })
-      .catch((err) => console.error(err));
+    let cancelled = false;
 
-    const role = localStorage.getItem("role");
-    if (role === "TEACHER") {
-      const teacherUserId = localStorage.getItem("userId");
-      API.get("/teachers/all")
-        .then((res) => {
-          const allTeachers = res.data || [];
-          const teacher = allTeachers.find(
-            (t) => String(t?.user?.id) === String(teacherUserId)
-          );
-          if (teacher && teacher.subject) {
-            setSubjects([teacher.subject]);
-            setSelectedSubjectCode(teacher.subject.subjectCode);
-          } else {
-            setSubjects([]);
+    const loadData = async () => {
+      setLoading(true);
+      try {
+        // 1. Fetch Students
+        const studentRes = await API.get("/students");
+        if (!cancelled) setAllStudents(studentRes.data || []);
+
+        // 2. Fetch Subjects based on role
+        const currentRole = localStorage.getItem("role");
+        if (currentRole === "TEACHER") {
+          const subjectsRes = await API.get("/teachers/subjects");
+          const teacherSubjects = subjectsRes.data || [];
+          if (!cancelled) {
+            setSubjects(teacherSubjects);
+            // Case A: If exactly 1 subject is assigned, automatically select it!
+            if (teacherSubjects.length === 1) {
+              setSelectedSubjectCode(teacherSubjects[0].subjectCode);
+            }
           }
-        })
-        .catch((err) => console.error(err));
-    } else {
-      API.get("/subjects/all")
-        .then((res) => {
-          setSubjects(res.data || []);
-        })
-        .catch((err) => console.error(err));
-    }
-  }, []);
+        } else {
+          const allSubjectsRes = await API.get("/subjects/all");
+          if (!cancelled) setSubjects(allSubjectsRes.data || []);
+        }
+      } catch (err) {
+        console.error("Error loading resources:", err);
+        showToast("Error loading required database fields.", "error");
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    };
+
+    loadData();
+    return () => {
+      cancelled = true;
+    };
+  }, [showToast]);
 
   const classOptions = useMemo(() => {
     const set = new Set();
@@ -99,7 +109,7 @@ function AddResult() {
 
   const handleSearch = () => {
     if (!selectedSubjectCode) {
-      showToast("Please select a subject.", "error");
+      showToast("Please select a subject first.", "error");
       return;
     }
     if (!selectedClassName) {
@@ -113,7 +123,7 @@ function AddResult() {
 
     setStudentsForClass(filtered);
 
-    // Initialize/keep per-student form entries for the filtered list
+    // Initialize/keep per-student form entries
     setEntries((prev) => {
       const next = {};
       for (const s of filtered) {
@@ -148,7 +158,7 @@ function AddResult() {
       return;
     }
     if (studentsForClass.length === 0) {
-      showToast("No students found for this class. Please search again.", "error");
+      showToast("No student roster found to save. Please search again.", "error");
       return;
     }
 
@@ -159,16 +169,12 @@ function AddResult() {
     });
 
     if (missingMarks.length > 0) {
-      showToast(
-        "Please enter marks for all students before saving.",
-        "error"
-      );
+      showToast("Please enter marks for all students before saving.", "error");
       return;
     }
 
     setSaving(true);
     try {
-      // Save each student's result using the existing API.
       for (const s of studentsForClass) {
         const sid = s.studentId;
         const entry = entries?.[sid] || {};
@@ -182,58 +188,107 @@ function AddResult() {
         await API.post("/results/add", payload);
       }
 
-      showToast("Results saved successfully", "success");
-
-      // Clear input fields so teacher can mark next subject.
+      showToast("All results saved successfully!", "success");
       setEntries({});
+      setStudentsForClass([]);
+      setSelectedClassName("");
+      if (subjects.length > 1 || role !== "TEACHER") {
+        setSelectedSubjectCode("");
+      }
     } catch (err) {
       console.error(err);
-      showToast("Error saving results", "error");
+      showToast("Error saving grades database", "error");
     } finally {
       setSaving(false);
     }
   };
+
+  // 🔹 Render Subject Selector according to Cases A, B, and C
+  const renderSubjectSelector = () => {
+    // Case C: No subjects assigned
+    if (subjects.length === 0) {
+      return (
+        <TextField
+          fullWidth
+          disabled
+          label="Subject Specialization"
+          value="No subjects assigned by admin"
+          error
+          helperText="⚠️ You cannot input marks until an admin assigns you a subject profile."
+        />
+      );
+    }
+
+    // Case A: Exactly 1 subject assigned -> Auto-selected, disabled/readonly view
+    if (subjects.length === 1 && role === "TEACHER") {
+      const singleSub = subjects[0];
+      return (
+        <TextField
+          fullWidth
+          disabled
+          label="Assigned Subject"
+          value={`${singleSub.subjectCode} - ${singleSub.subjectName || singleSub.name}`}
+          helperText="Auto-Selected (Single Subject Assigned)"
+        />
+      );
+    }
+
+    // Case B: Multiple subjects assigned (or ADMIN user) -> Show dynamic select dropdown
+    return (
+      <TextField
+        select
+        fullWidth
+        required
+        label="Select Subject"
+        value={selectedSubjectCode}
+        onChange={(e) => setSelectedSubjectCode(e.target.value)}
+      >
+        <MenuItem value="">
+          <em>Select Subject</em>
+        </MenuItem>
+        {subjects.map((sub) => (
+          <MenuItem key={sub.id} value={sub.subjectCode}>
+            {sub.subjectCode} - {sub.subjectName || sub.name}
+          </MenuItem>
+        ))}
+      </TextField>
+    );
+  };
+
+  if (loading) {
+    return (
+      <Box sx={{ display: "flex", justifyContent: "center", alignItems: "center", minHeight: "60vh" }}>
+        <CircularProgress />
+      </Box>
+    );
+  }
 
   return (
     <Box>
       <Typography variant="h4" sx={{ fontWeight: 900, mb: 2 }}>
         Add Marks
       </Typography>
+      <Typography variant="body2" color="text.secondary" sx={{ mb: 4 }}>
+        Officially register marks, grades, and comments for students in your assigned classes.
+      </Typography>
 
-      {/* Filters */}
-      <Paper sx={{ p: 3, borderRadius: 4, mb: 3 }}>
-        <Grid container spacing={2}>
-          <Grid item xs={12} md={12}>
-            <TextField
-              select
-              fullWidth
-              required
-              disabled={role === "TEACHER"}
-              label="Select Subject"
-              value={selectedSubjectCode}
-              onChange={(e) => setSelectedSubjectCode(e.target.value)}
-              SelectProps={{ displayEmpty: true }}
-            >
-              <MenuItem value="">
-                <em>Select Subject</em>
-              </MenuItem>
-              {subjects.map((sub) => (
-                <MenuItem key={sub.id} value={sub.subjectCode}>
-                  {sub.subjectCode} - {sub.subjectName}
-                </MenuItem>
-              ))}
-            </TextField>
+      {/* Filter Card */}
+      <Paper sx={{ p: 4, borderRadius: 4, mb: 4 }}>
+        <Grid container spacing={3} alignItems="center">
+          
+          <Grid item xs={12} md={6}>
+            {renderSubjectSelector()}
           </Grid>
 
-          <Grid item xs={12} md={12}>
+          <Grid item xs={12} md={6}>
             <TextField
               select
               fullWidth
               required
+              disabled={subjects.length === 0}
               label="Select Class"
               value={selectedClassName}
               onChange={(e) => setSelectedClassName(e.target.value)}
-              SelectProps={{ displayEmpty: true }}
             >
               <MenuItem value="">
                 <em>Select Class</em>
@@ -246,42 +301,50 @@ function AddResult() {
             </TextField>
           </Grid>
 
-          <Grid item xs={12} md={12}>
+          <Grid item xs={12}>
+            <Divider sx={{ my: 1 }} />
+          </Grid>
+
+          <Grid item xs={12} sm={6}>
             <Button
               variant="contained"
               onClick={handleSearch}
-              sx={{ borderRadius: 3, px: 3, py: 1.25, width: "100%" }}
+              disabled={subjects.length === 0 || !selectedClassName}
+              sx={{ borderRadius: 3, py: 1.5, px: 4, fontWeight: "bold", width: "100%" }}
             >
-              Search
+              Search Students
             </Button>
           </Grid>
 
-          <Grid item xs={12} md={12}>
+          <Grid item xs={12} sm={6}>
             <Box sx={{ display: "flex", justifyContent: "flex-end" }}>
               <Button
                 variant="contained"
                 onClick={handleSave}
                 disabled={saving || studentsForClass.length === 0}
-                sx={{
-                  borderRadius: 3,
-                  px: 3,
-                  py: 1.25,
-                  backgroundColor: "primary.main",
-                }}
+                color="success"
+                sx={{ borderRadius: 3, py: 1.5, px: 4, fontWeight: "bold", width: "100%" }}
               >
-                {saving ? "Saving..." : "Save Marks"}
+                {saving ? "Saving Grades..." : "Save All Marks"}
               </Button>
             </Box>
           </Grid>
+
         </Grid>
       </Paper>
 
-      {/* Students table */}
+      {/* Students Table */}
       {studentsForClass.length === 0 ? (
-        <Paper sx={{ p: 3, borderRadius: 4 }}>
-          <Typography color="text.secondary">
-            Select a subject and class, then click `Search` to load students.
-          </Typography>
+        <Paper sx={{ p: 4, borderRadius: 4, textAlign: "center" }}>
+          {subjects.length === 0 ? (
+            <Alert severity="error" sx={{ borderRadius: 3 }}>
+              You do not have any subjects assigned to your profile by the system administrator. Marks entry is disabled.
+            </Alert>
+          ) : (
+            <Typography color="text.secondary" sx={{ py: 2 }}>
+              Select an assigned subject and class, then click <strong>Search Students</strong> to load the class roster.
+            </Typography>
+          )}
         </Paper>
       ) : (
         <TableContainer
@@ -291,16 +354,17 @@ function AddResult() {
             overflowX: "auto",
             maxWidth: "100%",
             WebkitOverflowScrolling: "touch",
+            boxShadow: "0 10px 30px rgba(0,0,0,0.02)"
           }}
         >
-          <Table size="small" aria-label="students results entry table" sx={{ minWidth: 560 }}>
-            <TableHead>
+          <Table size="medium" aria-label="students marks roster" sx={{ minWidth: 650 }}>
+            <TableHead sx={{ bgcolor: "action.hover" }}>
               <TableRow>
-                <TableCell sx={{ fontWeight: 900 }}>Student</TableCell>
-                <TableCell sx={{ fontWeight: 900 }}>Marks</TableCell>
-                <TableCell sx={{ fontWeight: 900 }}>Marks in Words</TableCell>
-                <TableCell sx={{ fontWeight: 900 }}>Grade</TableCell>
-                <TableCell sx={{ fontWeight: 900 }}>Comment</TableCell>
+                <TableCell sx={{ fontWeight: 900 }}>Student details</TableCell>
+                <TableCell sx={{ fontWeight: 900, width: 150 }}>Marks (0-100)</TableCell>
+                <TableCell sx={{ fontWeight: 900, width: 200 }}>Marks in Words</TableCell>
+                <TableCell sx={{ fontWeight: 900, width: 130 }}>Auto Grade</TableCell>
+                <TableCell sx={{ fontWeight: 900 }}>Comment / Feedback</TableCell>
               </TableRow>
             </TableHead>
             <TableBody>
@@ -308,48 +372,54 @@ function AddResult() {
                 const sid = s.studentId;
                 const row = entries?.[sid] || {};
                 return (
-                  <TableRow key={sid}>
+                  <TableRow key={sid} hover>
+                    
                     <TableCell>
-                      <Box sx={{ display: "flex", flexDirection: "column" }}>
-                        <Typography sx={{ fontWeight: 800 }}>
+                      <Box sx={{ py: 0.5 }}>
+                        <Typography sx={{ fontWeight: 800, color: "text.primary" }}>
                           {s.name || "N/A"}
                         </Typography>
-                        <Typography variant="caption" color="text.secondary">
-                          {s.studentId}
+                        <Typography variant="caption" color="text.secondary" sx={{ display: "block" }}>
+                          ID: {s.studentId} | Class {s.className || "—"} {s.section || "—"}
                         </Typography>
                       </Box>
                     </TableCell>
 
-                    <TableCell sx={{ width: 140 }}>
+                    <TableCell>
                       <TextField
                         fullWidth
                         type="number"
+                        placeholder="Marks"
                         value={row.marks ?? ""}
                         onChange={handleEntryChange(sid, "marks")}
+                        inputProps={{ min: 0, max: 100 }}
                       />
                     </TableCell>
 
-                    <TableCell sx={{ width: 160 }}>
-                      <Typography sx={{ color: "text.secondary", fontStyle: "italic", textTransform: "capitalize" }}>
+                    <TableCell>
+                      <Typography sx={{ color: "text.secondary", fontStyle: "italic", textTransform: "capitalize", fontSize: "0.875rem" }}>
                         {row.marksInWords || convertMarksToWords(row.marks) || "—"}
                       </Typography>
                     </TableCell>
 
-                    <TableCell sx={{ width: 120 }}>
+                    <TableCell>
                       <TextField
                         fullWidth
+                        disabled
                         value={row.grade ?? ""}
-                        onChange={handleEntryChange(sid, "grade")}
+                        placeholder="Grade"
                       />
                     </TableCell>
 
                     <TableCell>
                       <TextField
                         fullWidth
+                        placeholder="e.g. Excellent progress"
                         value={row.comment ?? ""}
                         onChange={handleEntryChange(sid, "comment")}
                       />
                     </TableCell>
+
                   </TableRow>
                 );
               })}

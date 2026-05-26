@@ -33,31 +33,14 @@ function TeacherDashboard() {
 
     async function loadStats() {
       setStatsLoading(true);
-
       try {
-        const studentRes = await API.get("/students");
-        if (!cancelled) setTotalStudents((studentRes.data || []).length);
-      } catch (err) {
-        console.error(err);
-      }
-
-      try {
-        const teacherUserId = localStorage.getItem("userId");
-        if (!teacherUserId) {
-          if (!cancelled) setSubjectsAssigned(0);
-          return;
+        const res = await API.get("/teachers/dashboard-stats");
+        if (!cancelled) {
+          setTotalStudents(res.data.totalStudents || 0);
+          setSubjectsAssigned(res.data.assignedSubjects || 0);
         }
-
-        const teachersRes = await API.get("/teachers/all");
-        const allTeachers = teachersRes.data || [];
-        const teacher = allTeachers.find(
-          (t) => String(t?.user?.id) === String(teacherUserId)
-        );
-
-        const count = teacher?.subject ? 1 : 0;
-        if (!cancelled) setSubjectsAssigned(count);
       } catch (err) {
-        console.error(err);
+        console.error("Error loading dashboard stats:", err);
       } finally {
         if (!cancelled) setStatsLoading(false);
       }
