@@ -18,6 +18,7 @@ import AssignmentTurnedInIcon from "@mui/icons-material/AssignmentTurnedIn";
 import AccountCircleIcon from "@mui/icons-material/AccountCircle";
 import EventAvailableIcon from "@mui/icons-material/EventAvailable";
 import HistoryIcon from "@mui/icons-material/History";
+import QuizIcon from "@mui/icons-material/Quiz";
 
 function Sidebar() {
   const role = localStorage.getItem("role");
@@ -37,12 +38,14 @@ function Sidebar() {
           { label: "View Results", to: "/view-results", icon: <AssignmentTurnedInIcon /> },
           { label: "Attendance", to: "/attendance", icon: <EventAvailableIcon /> },
           { label: "Audit Logs", to: "/audit-logs", icon: <HistoryIcon /> },
+          { label: "Exam Management", to: "/exams", icon: <QuizIcon /> },
         ]
       : role === "TEACHER"
       ? [
           { label: "Dashboard", to: "/teacher", icon: <DashboardIcon /> },
           { label: "View Students", to: "/view-students", icon: <PeopleAltIcon /> },
           { label: "Add Marks", to: "/add-result", icon: <PostAddIcon /> },
+          { label: "My Exams", to: "/teacher-exams", icon: <QuizIcon /> },
           { label: "Attendance", to: "/attendance", icon: <EventAvailableIcon /> },
           { label: "Profile", to: "/teacher-profile", icon: <AccountCircleIcon /> },
         ]
@@ -50,6 +53,7 @@ function Sidebar() {
       ? [
           { label: "Dashboard", to: "/student", icon: <DashboardIcon /> },
           { label: "My Results", to: "/result", icon: <AssignmentTurnedInIcon /> },
+          { label: "My Exams", to: "/my-exams", icon: <QuizIcon /> },
           { label: "Attendance", to: "/attendance", icon: <EventAvailableIcon /> },
           { label: "Profile", to: "/view-profile", icon: <AccountCircleIcon /> },
         ]

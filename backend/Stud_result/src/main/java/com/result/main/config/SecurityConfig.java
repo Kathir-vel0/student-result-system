@@ -54,6 +54,30 @@ public class SecurityConfig {
                 .requestMatchers("/api/analytics/admin").hasRole("ADMIN")
                 .requestMatchers("/api/audit/**").hasRole("ADMIN")
                 .requestMatchers(HttpMethod.POST, "/api/results/publish").hasRole("ADMIN")
+
+                // Exam management — admin
+                .requestMatchers(HttpMethod.POST, "/api/exams").hasRole("ADMIN")
+                .requestMatchers(HttpMethod.PUT, "/api/exams/**").hasRole("ADMIN")
+                .requestMatchers(HttpMethod.DELETE, "/api/exams/**").hasRole("ADMIN")
+                .requestMatchers(HttpMethod.PATCH, "/api/exams/**").hasRole("ADMIN")
+                .requestMatchers(HttpMethod.POST, "/api/exams/*/publish").hasRole("ADMIN")
+                .requestMatchers(HttpMethod.POST, "/api/exams/notifications").hasRole("ADMIN")
+                .requestMatchers("/api/exams/analytics/admin/**").hasRole("ADMIN")
+                .requestMatchers("/api/exams/page").hasAnyRole("ADMIN", "TEACHER")
+
+                // Exam — teacher
+                .requestMatchers(HttpMethod.POST, "/api/exams/marks").hasRole("TEACHER")
+                .requestMatchers(HttpMethod.POST, "/api/exams/*/submit-review").hasRole("TEACHER")
+                .requestMatchers("/api/exams/teacher/**").hasRole("TEACHER")
+                .requestMatchers("/api/exams/analytics/teacher").hasRole("TEACHER")
+                .requestMatchers("/api/exams/*/marks").hasAnyRole("ADMIN", "TEACHER")
+
+                // Exam — student (published only enforced in service)
+                .requestMatchers("/api/exams/student/**").hasAnyRole("STUDENT", "ADMIN", "TEACHER")
+                .requestMatchers("/api/exams/analytics/student/**").hasAnyRole("STUDENT", "ADMIN", "TEACHER")
+                .requestMatchers("/api/exams/timetable").hasAnyRole("ADMIN", "TEACHER", "STUDENT")
+                .requestMatchers("/api/exams/notifications").authenticated()
+                .requestMatchers(HttpMethod.GET, "/api/exams/**").authenticated()
                 .requestMatchers("/api/teachers/page").hasRole("ADMIN")
                 // Attendance — role-scoped (order: specific before broad)
                 .requestMatchers("/api/attendance/student/**").hasAnyRole("STUDENT", "ADMIN", "TEACHER")

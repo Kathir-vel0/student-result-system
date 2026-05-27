@@ -16,9 +16,10 @@ import SettingsOutlinedIcon from "@mui/icons-material/SettingsOutlined";
 import MenuIcon from "@mui/icons-material/Menu";
 import Avatar from "@mui/material/Avatar";
 import { useTheme } from "@mui/material/styles";
-import { useContext, useMemo, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import { ColorModeContext } from "../theme/ThemeProviderWrapper";
 import { useLayoutNav } from "../context/LayoutNavContext";
+import API from "../api/api";
 
 function Navbar() {
   const navigate = useNavigate();
@@ -35,14 +36,22 @@ function Navbar() {
     ? role.charAt(0).toUpperCase() + role.slice(1).toLowerCase()
     : "Dashboard";
 
-  const notifications = useMemo(
-    () => [
-      { title: "System Update", body: "Latest changes are now live." },
-      { title: "New Activity", body: "Check your latest results." },
-      { title: "Reminder", body: "Keep adding marks on time." },
-    ],
-    []
-  );
+  const [notifications, setNotifications] = useState([
+    { title: "Welcome", body: "Check exam updates and results here." },
+  ]);
+
+  useEffect(() => {
+    if (!role) return;
+    API.get("/exams/notifications", { params: { limit: 10 } })
+      .then((res) => {
+        const items = (res.data || []).map((n) => ({
+          title: n.title,
+          body: n.message,
+        }));
+        if (items.length) setNotifications(items);
+      })
+      .catch(() => {});
+  }, [role]);
 
   const openNotifications = Boolean(notificationAnchor);
   const openSettings = Boolean(settingsAnchor);

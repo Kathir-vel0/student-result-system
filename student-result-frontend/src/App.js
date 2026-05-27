@@ -25,6 +25,9 @@ import ViewSubjects from "./pages/ViewSubjects";
 import Result from "./pages/Result";
 import AttendanceManagement from "./pages/AttendanceManagement";
 import AuditLogs from "./pages/AuditLogs";
+import AdminExamManagement from "./pages/AdminExamManagement";
+import TeacherExamManagement from "./pages/TeacherExamManagement";
+import StudentExamPortal from "./pages/StudentExamPortal";
 
 function App() {
   return (
@@ -49,6 +52,7 @@ function App() {
             <Route path="view-subjects" element={<ViewSubjects />} />
             <Route path="view-results" element={<ViewResults />} />
             <Route path="audit-logs" element={<AuditLogs />} />
+            <Route path="exams" element={<AdminExamManagement />} />
           </Route>
 
           {/* 🛡️ TEACHER ONLY ROUTES */}
@@ -56,6 +60,7 @@ function App() {
             <Route path="teacher" element={<TeacherDashboard />} />
             <Route path="teacher-profile" element={<TeacherProfile />} />
             <Route path="add-result" element={<AddResult />} />
+            <Route path="teacher-exams" element={<TeacherExamManagement />} />
           </Route>
 
           {/* 🛡️ STUDENT ONLY ROUTES */}
@@ -63,6 +68,7 @@ function App() {
             <Route path="student" element={<StudentDashboard />} />
             <Route path="result" element={<Result />} />
             <Route path="view-profile" element={<ViewProfile />} />
+            <Route path="my-exams" element={<StudentExamPortal />} />
           </Route>
 
           {/* 🛡️ SHARED ROUTES (multi-role) */}

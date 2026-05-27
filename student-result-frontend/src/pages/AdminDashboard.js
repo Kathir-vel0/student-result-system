@@ -19,6 +19,7 @@ import AssignmentTurnedInIcon from "@mui/icons-material/AssignmentTurnedIn";
 import PersonAddAlt1Icon from "@mui/icons-material/PersonAddAlt1";
 import AdminPanelSettingsIcon from "@mui/icons-material/AdminPanelSettings";
 import SchoolIcon from "@mui/icons-material/School";
+import QuizIcon from "@mui/icons-material/Quiz";
 import AdminAnalytics from "../components/analytics/AdminAnalytics";
 
 function AdminDashboard() {
@@ -94,6 +95,14 @@ function AdminDashboard() {
       icon: <AssignmentTurnedInIcon fontSize="large" />,
       color: "#f59e0b",
       bgColor: "rgba(245,158,11,0.1)",
+    },
+    {
+      to: "/exams",
+      label: "Exam Management",
+      description: "Create exams, schedules, publish results, and view exam analytics.",
+      icon: <QuizIcon fontSize="large" />,
+      color: "#8b5cf6",
+      bgColor: "rgba(139,92,246,0.1)",
     },
     {
       to: "/add-student",
