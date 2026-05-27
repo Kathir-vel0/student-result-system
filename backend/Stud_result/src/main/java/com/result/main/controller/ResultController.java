@@ -43,6 +43,8 @@ public class ResultController {
     private ResultRepository resultRepository;
     @Autowired
     private StudentRepository studentRepository;
+    @Autowired
+    private com.result.main.service.ExamService examService;
 
     @Autowired
     private SubjectRepository subjectRepository;
@@ -106,6 +108,13 @@ public class ResultController {
     public List<Result> getResultByStudent(@PathVariable String studentId) {
         // Students should only see published results
         return resultRepository.findByStudentStudentIdAndPublishedTrue(studentId);
+    }
+
+    @GetMapping("/published")
+    public ResponseEntity<List<Map<String, Object>>> getPublishedResults(
+            @RequestParam String className,
+            @RequestParam Long examId) {
+        return ResponseEntity.ok(examService.getPublishedResultsForClassAndExam(className, examId));
     }
 
     // UPDATE (TEACHER)

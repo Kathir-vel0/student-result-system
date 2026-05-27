@@ -50,7 +50,6 @@ function Sidebar() {
       : role === "STUDENT"
       ? [
           { label: "Dashboard", to: "/student", icon: <DashboardIcon /> },
-          { label: "My Results", to: "/result", icon: <AssignmentTurnedInIcon /> },
           { label: "My Exams", to: "/my-exams", icon: <QuizIcon /> },
           { label: "Attendance", to: "/attendance", icon: <EventAvailableIcon /> },
           { label: "Profile", to: "/view-profile", icon: <AccountCircleIcon /> },

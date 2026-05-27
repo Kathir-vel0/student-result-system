@@ -583,4 +583,56 @@ public class ExamService {
     private double round2(double v) {
         return Math.round(v * 100.0) / 100.0;
     }
+
+    public List<Map<String, Object>> getPublishedResultsForClassAndExam(String className, Long examId) {
+        List<ExamResult> results = examResultRepository.findPublishedByClassAndExam(className, examId);
+        
+        List<ExamSubject> examSubjects = examSubjectRepository.findByExamId(examId);
+        Map<Long, ExamSubject> examSubjectMap = examSubjects.stream()
+                .collect(Collectors.toMap(es -> es.getSubject().getId(), es -> es, (a, b) -> a));
+
+        List<Map<String, Object>> mapped = new ArrayList<>();
+        for (ExamResult er : results) {
+            ExamSubject es = examSubjectMap.get(er.getSubject().getId());
+            int maxMarks = (es != null && es.getMaxMarks() != null) ? es.getMaxMarks() : 100;
+            int passMarks = (es != null && es.getPassMarks() != null) ? es.getPassMarks() : 35;
+
+            Map<String, Object> map = new LinkedHashMap<>();
+            map.put("id", er.getId());
+            map.put("marks", er.getMarksObtained());
+            map.put("grade", er.getGrade());
+            map.put("comments", er.getRemarks() != null ? er.getRemarks() : "");
+            map.put("published", er.isPublished());
+            map.put("maxMarks", maxMarks);
+            map.put("passMarks", passMarks);
+
+            // Student
+            Map<String, Object> sMap = new LinkedHashMap<>();
+            sMap.put("studentId", er.getStudent().getStudentId());
+            sMap.put("name", er.getStudent().getName());
+            sMap.put("className", er.getStudent().getClassName());
+            sMap.put("section", er.getStudent().getSection());
+            sMap.put("email", er.getStudent().getEmail());
+            map.put("student", sMap);
+
+            // Exam
+            Map<String, Object> eMap = new LinkedHashMap<>();
+            eMap.put("id", er.getExam().getId());
+            eMap.put("examName", er.getExam().getExamName());
+            eMap.put("examType", er.getExam().getExamType());
+            eMap.put("className", er.getExam().getClassName());
+            eMap.put("section", er.getExam().getSection());
+            map.put("exam", eMap);
+
+            // Subject
+            Map<String, Object> subMap = new LinkedHashMap<>();
+            subMap.put("id", er.getSubject().getId());
+            subMap.put("subjectCode", er.getSubject().getSubjectCode());
+            subMap.put("subjectName", er.getSubject().getSubjectName());
+            map.put("subject", subMap);
+
+            mapped.add(map);
+        }
+        return mapped;
+    }
 }

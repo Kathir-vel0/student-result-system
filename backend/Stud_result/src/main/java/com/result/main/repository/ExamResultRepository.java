@@ -31,4 +31,11 @@ public interface ExamResultRepository extends JpaRepository<ExamResult, Long> {
 
     @Query("SELECT er FROM ExamResult er JOIN er.exam e WHERE e.published = true AND er.published = true")
     List<ExamResult> findAllPublishedResults();
+
+    @Query("SELECT er FROM ExamResult er " +
+           "JOIN FETCH er.student s " +
+           "JOIN FETCH er.subject sub " +
+           "JOIN FETCH er.exam e " +
+           "WHERE s.className = :className AND e.id = :examId AND er.published = true")
+    List<ExamResult> findPublishedByClassAndExam(@Param("className") String className, @Param("examId") Long examId);
 }

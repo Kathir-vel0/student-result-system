@@ -286,9 +286,9 @@ function StudentDashboard() {
                     <Box sx={{ p: 1, borderRadius: 2, bgcolor: "rgba(79,70,229,0.1)", color: "primary.main", display: "flex" }}>
                       <AssignmentTurnedInIcon />
                     </Box>
-                    <Typography sx={{ fontWeight: 800 }}>Full Results</Typography>
+                    <Typography sx={{ fontWeight: 800 }}>My Exams & Results</Typography>
                   </Box>
-                  <Button component={Link} to="/result" variant="contained" size="small" sx={{ borderRadius: 6, fontWeight: 700 }}>View</Button>
+                  <Button component={Link} to="/my-exams" variant="contained" size="small" sx={{ borderRadius: 6, fontWeight: 700 }}>View</Button>
                 </CardContent>
               </Card>
 

@@ -21,7 +21,6 @@ import ViewStudents from "./pages/ViewStudents";
 import ViewResults from "./pages/ViewResults";
 import ViewTeachers from "./pages/ViewTeachers";
 import ViewSubjects from "./pages/ViewSubjects";
-import Result from "./pages/Result";
 import AttendanceManagement from "./pages/AttendanceManagement";
 import AuditLogs from "./pages/AuditLogs";
 import AdminExamManagement from "./pages/AdminExamManagement";
@@ -64,7 +63,6 @@ function App() {
           {/* 🛡️ STUDENT ONLY ROUTES */}
           <Route element={<ProtectedRoute allowedRoles={["STUDENT"]} />}>
             <Route path="student" element={<StudentDashboard />} />
-            <Route path="result" element={<Result />} />
             <Route path="view-profile" element={<ViewProfile />} />
             <Route path="my-exams" element={<StudentExamPortal />} />
           </Route>
