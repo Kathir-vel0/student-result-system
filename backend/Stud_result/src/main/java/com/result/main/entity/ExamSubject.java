@@ -35,6 +35,9 @@ public class ExamSubject {
 
     private Integer maxMarks;
 
+    @Column(name = "total_marks")
+    private Integer totalMarks;
+
     private Integer passMarks;
 
     private String roomNumber;
@@ -47,6 +50,7 @@ public class ExamSubject {
     public LocalTime getStartTime() { return startTime; }
     public LocalTime getEndTime() { return endTime; }
     public Integer getMaxMarks() { return maxMarks; }
+    public Integer getTotalMarks() { return totalMarks != null ? totalMarks : maxMarks; }
     public Integer getPassMarks() { return passMarks; }
     public String getRoomNumber() { return roomNumber; }
 
@@ -57,7 +61,16 @@ public class ExamSubject {
     public void setExamDate(LocalDate examDate) { this.examDate = examDate; }
     public void setStartTime(LocalTime startTime) { this.startTime = startTime; }
     public void setEndTime(LocalTime endTime) { this.endTime = endTime; }
-    public void setMaxMarks(Integer maxMarks) { this.maxMarks = maxMarks; }
+    public void setMaxMarks(Integer maxMarks) {
+        this.maxMarks = maxMarks;
+        if (this.totalMarks == null) {
+            this.totalMarks = maxMarks;
+        }
+    }
+    public void setTotalMarks(Integer totalMarks) {
+        this.totalMarks = totalMarks;
+        this.maxMarks = totalMarks;
+    }
     public void setPassMarks(Integer passMarks) { this.passMarks = passMarks; }
     public void setRoomNumber(String roomNumber) { this.roomNumber = roomNumber; }
 }

@@ -26,6 +26,7 @@ public class ExamService {
     private final StudentRepository studentRepository;
     private final UserRepository userRepository;
     private final AuditService auditService;
+    private final ResultCalculationService resultCalculationService;
 
     public ExamService(
             ExamRepository examRepository,
@@ -36,7 +37,8 @@ public class ExamService {
             TeacherRepository teacherRepository,
             StudentRepository studentRepository,
             UserRepository userRepository,
-            AuditService auditService) {
+            AuditService auditService,
+            ResultCalculationService resultCalculationService) {
         this.examRepository = examRepository;
         this.examSubjectRepository = examSubjectRepository;
         this.examResultRepository = examResultRepository;
@@ -46,6 +48,7 @@ public class ExamService {
         this.studentRepository = studentRepository;
         this.userRepository = userRepository;
         this.auditService = auditService;
+        this.resultCalculationService = resultCalculationService;
     }
 
     public PageResponse<Map<String, Object>> searchExams(
@@ -327,8 +330,18 @@ public class ExamService {
     public List<Map<String, Object>> getStudentExams(String studentId) {
         Student student = studentRepository.findByStudentId(studentId)
                 .orElseThrow(() -> new RuntimeException("Student not found"));
-        return examRepository.findByClassNameAndSection(student.getClassName(), student.getSection())
-                .stream()
+        
+        List<Exam> currentExams = examRepository.findByClassNameAndSection(student.getClassName(), student.getSection());
+
+        List<com.result.main.entity.ExamResult> publishedResults = examResultRepository.findPublishedForStudent(studentId);
+        List<Exam> resultExams = publishedResults.stream()
+                .map(com.result.main.entity.ExamResult::getExam)
+                .collect(Collectors.toList());
+
+        Set<Exam> allExams = new LinkedHashSet<>(currentExams);
+        allExams.addAll(resultExams);
+
+        return allExams.stream()
                 .filter(e -> e.getStatus() != ExamStatus.DRAFT)
                 .map(this::toExamSummary)
                 .collect(Collectors.toList());
@@ -363,42 +376,50 @@ public class ExamService {
     }
 
     public Map<String, Object> getStudentExamSummary(String studentId, Long examId) {
-        List<ExamResult> results = examResultRepository
+        List<com.result.main.entity.ExamResult> results = examResultRepository
                 .findByStudentStudentIdAndExamIdAndPublishedTrue(studentId, examId);
         if (results.isEmpty()) {
             throw new RuntimeException("No published results found");
         }
         Exam exam = results.get(0).getExam();
-        int total = 0, max = 0;
         List<Map<String, Object>> subjects = new ArrayList<>();
-        for (ExamResult r : results) {
-            ExamSubject es = examSubjectRepository.findByExamId(examId).stream()
-                    .filter(s -> s.getSubject().getId().equals(r.getSubject().getId()))
-                    .findFirst().orElse(null);
-            int mm = es != null && es.getMaxMarks() != null ? es.getMaxMarks() : 100;
+        List<ResultCalculationService.SubjectScore> scoreList = new ArrayList<>();
+        
+        List<ExamSubject> examSubjects = examSubjectRepository.findByExamId(examId);
+        Map<Long, ExamSubject> examSubjectMap = examSubjects.stream()
+                .collect(Collectors.toMap(es -> es.getSubject().getId(), es -> es, (a, b) -> a));
+
+        for (com.result.main.entity.ExamResult r : results) {
+            ExamSubject es = examSubjectMap.get(r.getSubject().getId());
+            int maxMarks = es != null ? es.getTotalMarks() : 100;
+            int passMarks = es != null ? es.getPassMarks() : 35;
             int mo = r.getMarksObtained() != null ? r.getMarksObtained() : 0;
-            total += mo;
-            max += mm;
+
+            scoreList.add(new ResultCalculationService.SubjectScore(mo, maxMarks, passMarks));
+
             Map<String, Object> sub = new LinkedHashMap<>();
             sub.put("subjectCode", r.getSubject().getSubjectCode());
             sub.put("subjectName", r.getSubject().getSubjectName());
             sub.put("marksObtained", mo);
-            sub.put("maxMarks", mm);
-            sub.put("grade", r.getGrade());
+            sub.put("maxMarks", maxMarks);
+            sub.put("grade", resultCalculationService.calculateGrade(mo, maxMarks, passMarks));
             sub.put("remarks", r.getRemarks());
             subjects.add(sub);
         }
-        double pct = max > 0 ? round2(total * 100.0 / max) : 0;
+
+        Map<String, Object> calcStats = resultCalculationService.calculateOverallStats(scoreList);
+
         Map<String, Object> summary = new LinkedHashMap<>();
         summary.put("examId", examId);
         summary.put("examName", exam.getExamName());
         summary.put("examType", exam.getExamType());
         summary.put("subjects", subjects);
-        summary.put("totalMarks", total);
-        summary.put("maxMarks", max);
-        summary.put("percentage", pct);
-        summary.put("grade", overallGrade(pct));
-        summary.put("gpa", round2(pct / 25.0));
+        summary.put("totalMarks", calcStats.get("totalMarks"));
+        summary.put("maxMarks", calcStats.get("maxMarks"));
+        summary.put("percentage", calcStats.get("percentage"));
+        summary.put("grade", calcStats.get("grade"));
+        summary.put("gpa", calcStats.get("gpa"));
+        summary.put("status", calcStats.get("status"));
         return summary;
     }
 
@@ -434,7 +455,8 @@ public class ExamService {
             if (sr.getEndTime() != null && !sr.getEndTime().isBlank()) {
                 es.setEndTime(LocalTime.parse(sr.getEndTime()));
             }
-            es.setMaxMarks(sr.getMaxMarks() != null ? sr.getMaxMarks() : 100);
+            es.setTotalMarks(sr.getTotalMarks() != null ? sr.getTotalMarks() : (sr.getMaxMarks() != null ? sr.getMaxMarks() : 100));
+            es.setMaxMarks(sr.getTotalMarks() != null ? sr.getTotalMarks() : (sr.getMaxMarks() != null ? sr.getMaxMarks() : 100));
             es.setPassMarks(sr.getPassMarks() != null ? sr.getPassMarks() : 35);
             es.setRoomNumber(sr.getRoomNumber());
             examSubjectRepository.save(es);
@@ -594,13 +616,13 @@ public class ExamService {
         List<Map<String, Object>> mapped = new ArrayList<>();
         for (ExamResult er : results) {
             ExamSubject es = examSubjectMap.get(er.getSubject().getId());
-            int maxMarks = (es != null && es.getMaxMarks() != null) ? es.getMaxMarks() : 100;
-            int passMarks = (es != null && es.getPassMarks() != null) ? es.getPassMarks() : 35;
+            int maxMarks = es != null ? es.getTotalMarks() : 100;
+            int passMarks = es != null ? es.getPassMarks() : 35;
 
             Map<String, Object> map = new LinkedHashMap<>();
             map.put("id", er.getId());
             map.put("marks", er.getMarksObtained());
-            map.put("grade", er.getGrade());
+            map.put("grade", resultCalculationService.calculateGrade(er.getMarksObtained(), maxMarks, passMarks));
             map.put("comments", er.getRemarks() != null ? er.getRemarks() : "");
             map.put("published", er.isPublished());
             map.put("maxMarks", maxMarks);

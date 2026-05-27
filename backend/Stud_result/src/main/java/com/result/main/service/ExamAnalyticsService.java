@@ -14,16 +14,19 @@ public class ExamAnalyticsService {
     private final ExamResultRepository examResultRepository;
     private final ExamSubjectRepository examSubjectRepository;
     private final StudentRepository studentRepository;
+    private final ResultCalculationService resultCalculationService;
 
     public ExamAnalyticsService(
             ExamRepository examRepository,
             ExamResultRepository examResultRepository,
             ExamSubjectRepository examSubjectRepository,
-            StudentRepository studentRepository) {
+            StudentRepository studentRepository,
+            ResultCalculationService resultCalculationService) {
         this.examRepository = examRepository;
         this.examResultRepository = examResultRepository;
         this.examSubjectRepository = examSubjectRepository;
         this.studentRepository = studentRepository;
+        this.resultCalculationService = resultCalculationService;
     }
 
     public Map<String, Object> getAdminAnalytics(Long examId) {
@@ -32,18 +35,28 @@ public class ExamAnalyticsService {
         List<ExamResult> results = examResultRepository.findByExamId(examId);
         List<ExamSubject> examSubjects = examSubjectRepository.findByExamId(examId);
 
-        int pass = 0, fail = 0;
+        Map<String, List<ResultCalculationService.SubjectScore>> studentScoresMap = new HashMap<>();
         for (ExamResult r : results) {
             if (r.getMarksObtained() == null) continue;
+            String sid = r.getStudent().getStudentId();
             ExamSubject es = examSubjects.stream()
                     .filter(s -> s.getSubject().getId().equals(r.getSubject().getId()))
                     .findFirst().orElse(null);
-            int passMarks = es != null && es.getPassMarks() != null ? es.getPassMarks() : 35;
-            int maxMarks = es != null && es.getMaxMarks() != null ? es.getMaxMarks() : 100;
-            double pct = maxMarks > 0 ? r.getMarksObtained() * 100.0 / maxMarks : 0;
-            double passPct = maxMarks > 0 ? passMarks * 100.0 / maxMarks : 35;
-            if (pct >= passPct) pass++;
-            else fail++;
+            int mm = es != null ? es.getTotalMarks() : 100;
+            int pm = es != null ? es.getPassMarks() : 35;
+
+            studentScoresMap.computeIfAbsent(sid, k -> new ArrayList<>())
+                    .add(new ResultCalculationService.SubjectScore(r.getMarksObtained(), mm, pm));
+        }
+
+        int pass = 0, fail = 0;
+        for (List<ResultCalculationService.SubjectScore> scores : studentScoresMap.values()) {
+            Map<String, Object> stats = resultCalculationService.calculateOverallStats(scores);
+            if ("PASSED".equals(stats.get("status"))) {
+                pass++;
+            } else {
+                fail++;
+            }
         }
         int graded = pass + fail;
 
@@ -55,7 +68,7 @@ public class ExamAnalyticsService {
             ExamSubject es = examSubjects.stream()
                     .filter(s -> s.getSubject().getId().equals(r.getSubject().getId()))
                     .findFirst().orElse(null);
-            int mm = es != null && es.getMaxMarks() != null ? es.getMaxMarks() : 100;
+            int mm = es != null ? es.getTotalMarks() : 100;
             studentTotals.merge(sid, (double) r.getMarksObtained(), Double::sum);
             studentMax.merge(sid, (double) mm, Double::sum);
         }
@@ -113,7 +126,7 @@ public class ExamAnalyticsService {
                 .findFirst()
                 .orElseThrow(() -> new RuntimeException("Subject not in exam"));
 
-        int maxMarks = es.getMaxMarks() != null ? es.getMaxMarks() : 100;
+        int maxMarks = es.getTotalMarks();
         int passMarks = es.getPassMarks() != null ? es.getPassMarks() : 35;
 
         List<Integer> marksList = results.stream()
@@ -166,17 +179,21 @@ public class ExamAnalyticsService {
         for (Map.Entry<Long, List<ExamResult>> entry : byExam.entrySet()) {
             Exam exam = entry.getValue().get(0).getExam();
             List<ExamSubject> examSubjects = examSubjectRepository.findByExamId(exam.getId());
-            int total = 0, max = 0;
+            List<ResultCalculationService.SubjectScore> scoreList = new ArrayList<>();
             for (ExamResult r : entry.getValue()) {
                 ExamSubject es = examSubjects.stream()
                         .filter(s -> s.getSubject().getId().equals(r.getSubject().getId()))
                         .findFirst().orElse(null);
-                int mm = es != null && es.getMaxMarks() != null ? es.getMaxMarks() : 100;
-                total += r.getMarksObtained() != null ? r.getMarksObtained() : 0;
-                max += mm;
+                int mm = es != null ? es.getTotalMarks() : 100;
+                int pm = es != null ? es.getPassMarks() : 35;
+                scoreList.add(new ResultCalculationService.SubjectScore(r.getMarksObtained(), mm, pm));
             }
-            double pct = max > 0 ? round2(total * 100.0 / max) : 0;
-            gpaTrend.add(Map.of("exam", exam.getExamName(), "percentage", pct, "gpa", round2(pct / 25.0)));
+            Map<String, Object> stats = resultCalculationService.calculateOverallStats(scoreList);
+            gpaTrend.add(Map.of(
+                    "exam", exam.getExamName(),
+                    "percentage", stats.get("percentage"),
+                    "gpa", stats.get("gpa")
+            ));
         }
 
         Map<String, List<Integer>> bySubject = new LinkedHashMap<>();
@@ -194,17 +211,17 @@ public class ExamAnalyticsService {
         Map<String, Double> examPct = new LinkedHashMap<>();
         for (Map.Entry<Long, List<ExamResult>> entry : byExam.entrySet()) {
             List<ExamSubject> examSubjects = examSubjectRepository.findByExamId(entry.getKey());
-            int total = 0, max = 0;
+            List<ResultCalculationService.SubjectScore> scoreList = new ArrayList<>();
             for (ExamResult r : entry.getValue()) {
                 ExamSubject es = examSubjects.stream()
                         .filter(s -> s.getSubject().getId().equals(r.getSubject().getId()))
                         .findFirst().orElse(null);
-                int mm = es != null && es.getMaxMarks() != null ? es.getMaxMarks() : 100;
-                total += r.getMarksObtained() != null ? r.getMarksObtained() : 0;
-                max += mm;
+                int mm = es != null ? es.getTotalMarks() : 100;
+                int pm = es != null ? es.getPassMarks() : 35;
+                scoreList.add(new ResultCalculationService.SubjectScore(r.getMarksObtained(), mm, pm));
             }
-            examPct.put(entry.getValue().get(0).getExam().getExamName(),
-                    max > 0 ? round2(total * 100.0 / max) : 0.0);
+            Map<String, Object> stats = resultCalculationService.calculateOverallStats(scoreList);
+            examPct.put(entry.getValue().get(0).getExam().getExamName(), (Double) stats.get("percentage"));
         }
         int rank = computeRank(studentId, examPct);
 
@@ -259,7 +276,7 @@ public class ExamAnalyticsService {
                 for (ExamResult er : examEntry.getValue()) {
                     if (er.getSubject() == null) continue;
                     ExamSubject es = examSubjects != null ? examSubjects.get(er.getSubject().getId()) : null;
-                    int mm = es != null && es.getMaxMarks() != null ? es.getMaxMarks() : 100;
+                    int mm = es != null ? es.getTotalMarks() : 100;
                     totalMarks += er.getMarksObtained() != null ? er.getMarksObtained() : 0;
                     maxMarks += mm;
                 }

@@ -234,8 +234,8 @@ function StudentExamPortal() {
                     <Card sx={{ borderRadius: 3 }}>
                       <CardContent>
                         <Typography variant="caption" color="text.secondary">Status</Typography>
-                        <Typography variant="h5" sx={{ fontWeight: 900, color: summary.grade === "F" ? "error.main" : "success.main" }}>
-                          {summary.grade === "F" ? "FAILED" : "PASSED"}
+                        <Typography variant="h5" sx={{ fontWeight: 900, color: summary.status === "FAILED" ? "error.main" : "success.main" }}>
+                          {summary.status || "N/A"}
                         </Typography>
                       </CardContent>
                     </Card>

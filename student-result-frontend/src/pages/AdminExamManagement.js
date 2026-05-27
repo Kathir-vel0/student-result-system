@@ -226,6 +226,13 @@ function AdminExamManagement() {
     });
   };
 
+  const removeSubjectRow = (idx) => {
+    setForm((prev) => {
+      const subjects = prev.subjects.filter((_, i) => i !== idx);
+      return { ...prev, subjects };
+    });
+  };
+
   const handleStartDateChange = (newStart) => {
     setForm((prev) => {
       const updatedSubjects = prev.subjects.map((sub) => {
@@ -440,34 +447,52 @@ function AdminExamManagement() {
           </Grid>
           <Typography variant="subtitle2" sx={{ mt: 3, mb: 1, fontWeight: 800 }}>Subjects & Schedule</Typography>
           {form.subjects.map((row, idx) => (
-            <Grid container spacing={1} key={idx} sx={{ mb: 1 }}>
-              <Grid item xs={12} md={3}>
-                <TextField select fullWidth size="small" label="Subject" value={row.subjectId} onChange={(e) => updateSubjectRow(idx, "subjectId", e.target.value)}>
-                  {subjects.map((s) => <MenuItem key={s.id} value={s.id}>{s.subjectName}</MenuItem>)}
-                </TextField>
+            <Paper variant="outlined" key={idx} sx={{ p: 2, mb: 2, borderRadius: 3, bgcolor: "background.default" }}>
+              <Grid container spacing={2} alignItems="center">
+                <Grid item xs={12} sm={6} md={3}>
+                  <TextField select fullWidth size="small" label="Subject" value={row.subjectId} onChange={(e) => updateSubjectRow(idx, "subjectId", e.target.value)}>
+                    {subjects.map((s) => <MenuItem key={s.id} value={s.id}>{s.subjectName}</MenuItem>)}
+                  </TextField>
+                </Grid>
+                <Grid item xs={12} sm={6} md={3}>
+                  <TextField select fullWidth size="small" label="Teacher" value={row.teacherId} onChange={(e) => updateSubjectRow(idx, "teacherId", e.target.value)}>
+                    <MenuItem value="">—</MenuItem>
+                    {teachers.map((t) => <MenuItem key={t.id} value={t.id}>{t.name}</MenuItem>)}
+                  </TextField>
+                </Grid>
+                <Grid item xs={12} sm={6} md={2}>
+                  <TextField fullWidth size="small" type="date" label="Exam Date" InputLabelProps={{ shrink: true }} inputProps={{ min: form.startDate, max: form.endDate }} value={row.examDate} onChange={(e) => updateSubjectRow(idx, "examDate", e.target.value)} />
+                </Grid>
+                <Grid item xs={6} sm={3} md={1}>
+                  <TextField fullWidth size="small" label="Start" value={row.startTime} onChange={(e) => updateSubjectRow(idx, "startTime", e.target.value)} />
+                </Grid>
+                <Grid item xs={6} sm={3} md={1}>
+                  <TextField fullWidth size="small" label="End" value={row.endTime} onChange={(e) => updateSubjectRow(idx, "endTime", e.target.value)} />
+                </Grid>
+                <Grid item xs={12} sm={6} md={2}>
+                  <TextField fullWidth size="small" label="Room" value={row.roomNumber} onChange={(e) => updateSubjectRow(idx, "roomNumber", e.target.value)} />
+                </Grid>
+                
+                {/* Standardized configured marks inputs */}
+                <Grid item xs={6} sm={4} md={2}>
+                  <TextField fullWidth size="small" type="number" label="Total Marks" value={row.totalMarks ?? row.maxMarks ?? 100} onChange={(e) => {
+                    updateSubjectRow(idx, "totalMarks", Number(e.target.value));
+                    updateSubjectRow(idx, "maxMarks", Number(e.target.value));
+                  }} />
+                </Grid>
+                <Grid item xs={6} sm={4} md={2}>
+                  <TextField fullWidth size="small" type="number" label="Pass Marks" value={row.passMarks ?? 35} onChange={(e) => updateSubjectRow(idx, "passMarks", Number(e.target.value))} />
+                </Grid>
+                <Grid item xs={12} sm={4} md={8} sx={{ display: 'flex', justifyContent: 'flex-end' }}>
+                  <Button variant="outlined" color="error" size="small" startIcon={<DeleteIcon />} onClick={() => removeSubjectRow(idx)} disabled={form.subjects.length <= 1}>
+                    Remove Subject
+                  </Button>
+                </Grid>
               </Grid>
-              <Grid item xs={12} md={3}>
-                <TextField select fullWidth size="small" label="Teacher" value={row.teacherId} onChange={(e) => updateSubjectRow(idx, "teacherId", e.target.value)}>
-                  <MenuItem value="">—</MenuItem>
-                  {teachers.map((t) => <MenuItem key={t.id} value={t.id}>{t.name}</MenuItem>)}
-                </TextField>
-              </Grid>
-              <Grid item xs={6} md={2}>
-                <TextField fullWidth size="small" type="date" label="Date" InputLabelProps={{ shrink: true }} inputProps={{ min: form.startDate, max: form.endDate }} value={row.examDate} onChange={(e) => updateSubjectRow(idx, "examDate", e.target.value)} />
-              </Grid>
-              <Grid item xs={3} md={1}>
-                <TextField fullWidth size="small" label="Start" value={row.startTime} onChange={(e) => updateSubjectRow(idx, "startTime", e.target.value)} />
-              </Grid>
-              <Grid item xs={3} md={1}>
-                <TextField fullWidth size="small" label="End" value={row.endTime} onChange={(e) => updateSubjectRow(idx, "endTime", e.target.value)} />
-              </Grid>
-              <Grid item xs={4} md={1}>
-                <TextField fullWidth size="small" label="Room" value={row.roomNumber} onChange={(e) => updateSubjectRow(idx, "roomNumber", e.target.value)} />
-              </Grid>
-            </Grid>
+            </Paper>
           ))}
-          <Button size="small" onClick={() => setForm((p) => ({ ...p, subjects: [...p.subjects, { ...emptyExam.subjects[0] }] }))}>
-            + Add Subject
+          <Button variant="outlined" size="small" startIcon={<AddIcon />} onClick={() => setForm((p) => ({ ...p, subjects: [...p.subjects, { ...emptyExam.subjects[0] }] }))} sx={{ borderRadius: 2 }}>
+            Add Subject
           </Button>
         </DialogContent>
         <DialogActions>

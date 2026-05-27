@@ -117,9 +117,10 @@ function ViewResults() {
   const overallGrade = (pct) => {
     if (pct >= 90) return "A+";
     if (pct >= 80) return "A";
-    if (pct >= 70) return "B";
-    if (pct >= 60) return "C";
-    if (pct >= 50) return "D";
+    if (pct >= 70) return "B+";
+    if (pct >= 60) return "B";
+    if (pct >= 50) return "C";
+    if (pct >= 40) return "D";
     return "F";
   };
 
@@ -259,10 +260,15 @@ function ViewResults() {
     studentList.forEach((data) => {
       const percentage = data.totalMaxMarks > 0 ? (data.totalMarks / data.totalMaxMarks) * 100 : 0;
       data.percentage = Number(percentage.toFixed(2));
-      data.gpa = Number((percentage / 25).toFixed(2));
       
-      const hasFailedSubject = data.results.some(r => Number(r.marks) < Number(r.passMarks || 35));
+      const hasFailedSubject = data.results.some(r => r.marks === null || Number(r.marks) < Number(r.passMarks || 35));
       data.status = hasFailedSubject ? "FAILED" : "PASSED";
+
+      const grade = hasFailedSubject ? "F" : overallGrade(data.percentage);
+      data.grade = grade;
+
+      const gpaMap = { "A+": 4.0, "A": 3.7, "B+": 3.3, "B": 3.0, "C": 2.5, "D": 2.0, "F": 0.0 };
+      data.gpa = gpaMap[grade] || 0.0;
     });
 
     studentList.sort((a, b) => b.percentage - a.percentage);
