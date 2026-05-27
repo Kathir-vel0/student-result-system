@@ -13,7 +13,6 @@ import DashboardIcon from "@mui/icons-material/Dashboard";
 import PersonAddIcon from "@mui/icons-material/PersonAdd";
 import SchoolIcon from "@mui/icons-material/School";
 import PeopleAltIcon from "@mui/icons-material/PeopleAlt";
-import PostAddIcon from "@mui/icons-material/PostAdd";
 import AssignmentTurnedInIcon from "@mui/icons-material/AssignmentTurnedIn";
 import AccountCircleIcon from "@mui/icons-material/AccountCircle";
 import EventAvailableIcon from "@mui/icons-material/EventAvailable";
@@ -44,7 +43,6 @@ function Sidebar() {
       ? [
           { label: "Dashboard", to: "/teacher", icon: <DashboardIcon /> },
           { label: "View Students", to: "/view-students", icon: <PeopleAltIcon /> },
-          { label: "Add Marks", to: "/add-result", icon: <PostAddIcon /> },
           { label: "My Exams", to: "/teacher-exams", icon: <QuizIcon /> },
           { label: "Attendance", to: "/attendance", icon: <EventAvailableIcon /> },
           { label: "Profile", to: "/teacher-profile", icon: <AccountCircleIcon /> },

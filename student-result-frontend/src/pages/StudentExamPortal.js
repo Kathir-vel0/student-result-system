@@ -97,6 +97,15 @@ function StudentExamPortal() {
       showToast("Selected exam not found.", "error");
       return;
     }
+    
+    // Explicit student class & section assignment validation
+    const studentClass = profile?.className;
+    const studentSection = profile?.section;
+    if (studentClass && studentSection && (exam.className !== studentClass || exam.section !== studentSection)) {
+      showToast("You are not eligible for this exam's hall ticket.", "error");
+      return;
+    }
+
     const examTimetable = timetable.filter((t) => String(t.examId) === String(selectedTimetableExam));
     if (examTimetable.length === 0) {
       showToast("No timetable exists for this exam. Hall ticket cannot be generated.", "warning");

@@ -14,7 +14,6 @@ import StudentDashboard from "./pages/StudentDashboard";
 import AddStudent from "./pages/AddStudent";
 import AddTeacher from "./pages/AddTeacher";
 import AddSubject from "./pages/AddSubject";
-import AddResult from "./pages/AddResult";
 
 import ViewProfile from "./pages/ViewProfile";
 import TeacherProfile from "./pages/TeacherProfile";
@@ -59,7 +58,6 @@ function App() {
           <Route element={<ProtectedRoute allowedRoles={["TEACHER"]} />}>
             <Route path="teacher" element={<TeacherDashboard />} />
             <Route path="teacher-profile" element={<TeacherProfile />} />
-            <Route path="add-result" element={<AddResult />} />
             <Route path="teacher-exams" element={<TeacherExamManagement />} />
           </Route>
 

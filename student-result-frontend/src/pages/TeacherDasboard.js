@@ -174,11 +174,11 @@ function TeacherDashboard() {
                       <Box sx={{ p: 1.5, borderRadius: 3, bgcolor: "rgba(16,185,129,0.1)", color: "#10b981", display: "inline-flex", alignSelf: "flex-start", mb: 2 }}>
                         <PostAddIcon />
                       </Box>
-                      <Typography variant="h6" sx={{ fontWeight: 800 }}>Add Marks</Typography>
+                      <Typography variant="h6" sx={{ fontWeight: 800 }}>Manage Exams & Marks</Typography>
                       <Typography variant="body2" color="text.secondary" sx={{ mb: 3, mt: 0.5, flexGrow: 1 }}>
-                        Input and officially publish grades and marks for the students under your supervision.
+                        Review assigned exams, schedules, enter student marks, and view performance analytics.
                       </Typography>
-                      <Button onClick={() => navigate("/add-result")} variant="contained" sx={{ borderRadius: 6, fontWeight: 700, bgcolor: "#10b981", "&:hover": { bgcolor: "#059669" } }}>Enter Grades</Button>
+                      <Button onClick={() => navigate("/teacher-exams")} variant="contained" sx={{ borderRadius: 6, fontWeight: 700, bgcolor: "#10b981", "&:hover": { bgcolor: "#059669" } }}>Enter Grades</Button>
                     </CardContent>
                   </Card>
                 </Grid>
