@@ -512,7 +512,6 @@ function AdminExamManagement() {
             <MenuItem value="ALL">Everyone</MenuItem>
             <MenuItem value="STUDENT">Students</MenuItem>
             <MenuItem value="TEACHER">Teachers</MenuItem>
-            <MenuItem value="ADMIN">Admins</MenuItem>
           </TextField>
         </DialogContent>
         <DialogActions>

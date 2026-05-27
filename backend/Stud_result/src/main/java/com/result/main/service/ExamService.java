@@ -348,6 +348,9 @@ public class ExamService {
     }
 
     public ExamNotification createNotification(ExamNotificationRequest req) {
+        if (req.getTargetRole() == null || (!req.getTargetRole().equals("ALL") && !req.getTargetRole().equals("STUDENT") && !req.getTargetRole().equals("TEACHER"))) {
+            throw new IllegalArgumentException("Invalid announcement target: " + req.getTargetRole() + ". Only Everyone, Students, and Teachers targets are allowed.");
+        }
         ExamNotification n = new ExamNotification();
         n.setTitle(req.getTitle());
         n.setMessage(req.getMessage());

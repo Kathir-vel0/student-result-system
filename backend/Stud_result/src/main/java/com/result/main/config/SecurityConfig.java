@@ -76,6 +76,7 @@ public class SecurityConfig {
                 .requestMatchers("/api/exams/student/**").hasAnyRole("STUDENT", "ADMIN", "TEACHER")
                 .requestMatchers("/api/exams/analytics/student/**").hasAnyRole("STUDENT", "ADMIN", "TEACHER")
                 .requestMatchers("/api/exams/timetable").hasAnyRole("ADMIN", "TEACHER", "STUDENT")
+                .requestMatchers("/api/announcements/**").authenticated()
                 .requestMatchers("/api/exams/notifications").authenticated()
                 .requestMatchers(HttpMethod.GET, "/api/exams/**").authenticated()
                 .requestMatchers("/api/teachers/page").hasRole("ADMIN")

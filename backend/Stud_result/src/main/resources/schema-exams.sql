@@ -58,3 +58,15 @@ CREATE TABLE IF NOT EXISTS exam_notifications (
     created_at DATETIME,
     FOREIGN KEY (exam_id) REFERENCES exams(id) ON DELETE SET NULL
 );
+
+CREATE TABLE IF NOT EXISTS announcement_reads (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    announcement_id BIGINT NOT NULL,
+    user_id BIGINT NOT NULL,
+    role VARCHAR(50) NOT NULL,
+    read_at DATETIME NOT NULL,
+    UNIQUE KEY uk_announcement_user (announcement_id, user_id),
+    FOREIGN KEY (announcement_id) REFERENCES exam_notifications(id) ON DELETE CASCADE,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+);
+

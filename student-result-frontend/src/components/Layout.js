@@ -3,6 +3,7 @@ import Navbar from "./Navbar";
 import { Outlet } from "react-router-dom";
 import Box from "@mui/material/Box";
 import { LayoutNavProvider } from "../context/LayoutNavContext";
+import AnnouncementPopup from "./common/AnnouncementPopup";
 
 function Layout() {
   return (
@@ -39,6 +40,7 @@ function Layout() {
           </Box>
         </Box>
       </Box>
+      <AnnouncementPopup />
     </LayoutNavProvider>
   );
 }
