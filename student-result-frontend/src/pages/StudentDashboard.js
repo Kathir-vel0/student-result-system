@@ -19,6 +19,9 @@ import LinearProgress from "@mui/material/LinearProgress";
 import CircularProgress from "@mui/material/CircularProgress";
 import Fade from "@mui/material/Fade";
 import Grow from "@mui/material/Grow";
+import MenuItem from "@mui/material/MenuItem";
+import TextField from "@mui/material/TextField";
+import PictureAsPdfIcon from "@mui/icons-material/PictureAsPdf";
 
 import AssignmentTurnedInIcon from "@mui/icons-material/AssignmentTurnedIn";
 import TrendingUpIcon from "@mui/icons-material/TrendingUp";
@@ -26,77 +29,111 @@ import MenuBookIcon from "@mui/icons-material/MenuBook";
 import AccountCircleIcon from "@mui/icons-material/AccountCircle";
 import EmojiEventsIcon from "@mui/icons-material/EmojiEvents";
 import StudentAnalytics from "../components/analytics/StudentAnalytics";
-import DownloadReportCardButton from "../components/common/DownloadReportCardButton";
+import { downloadExamReportCardPdf } from "../utils/examPdf";
 
 function StudentDashboard() {
   const studentId = localStorage.getItem("studentId");
+  const [exams, setExams] = useState([]);
+  const [selectedExamId, setSelectedExamId] = useState("");
+  const [summary, setSummary] = useState(null);
   const [results, setResults] = useState([]);
   const [loading, setLoading] = useState(true);
 
+  // Fetch all published exams for this student
   useEffect(() => {
     if (!studentId) {
-      setResults([]);
       setLoading(false);
       return;
     }
-
     setLoading(true);
-    API.get(`/results/student/${studentId}`)
+    API.get(`/exams/student/${studentId}/exams`)
       .then((res) => {
-        setResults(res.data || []);
+        const allExams = res.data || [];
+        const published = allExams.filter((e) => e.published);
+        // Sort descending so latest is first
+        published.sort((a, b) => Number(b.id) - Number(a.id));
+        setExams(published);
+        if (published.length > 0) {
+          setSelectedExamId(String(published[0].id));
+        } else {
+          setLoading(false);
+        }
       })
       .catch((err) => {
         console.error(err);
+        setLoading(false);
+      });
+  }, [studentId]);
+
+  // Load summary and results dynamically for the selected exam
+  useEffect(() => {
+    if (!studentId || !selectedExamId) {
+      setResults([]);
+      setSummary(null);
+      return;
+    }
+    setLoading(true);
+    Promise.all([
+      API.get(`/exams/student/${studentId}/summary/${selectedExamId}`),
+      API.get(`/exams/student/${studentId}/results/${selectedExamId}`),
+    ])
+      .then(([summaryRes, resultsRes]) => {
+        setSummary(summaryRes.data || null);
+        setResults(resultsRes.data || []);
+      })
+      .catch((err) => {
+        console.error(err);
+        setSummary(null);
         setResults([]);
       })
       .finally(() => setLoading(false));
-  }, [studentId]);
+  }, [studentId, selectedExamId]);
 
   const gradeToChip = (grade) => {
     const g = String(grade || "").toUpperCase();
-    if (g === "A") return <Chip size="small" label="A" color="success" sx={{ fontWeight: 800 }} />;
-    if (g === "B") return <Chip size="small" label="B" color="primary" sx={{ fontWeight: 800 }} />;
-    if (g === "C") return <Chip size="small" label="C" color="warning" sx={{ fontWeight: 800 }} />;
-    if (g === "D") return <Chip size="small" label="D" color="error" sx={{ fontWeight: 800 }} />;
+    if (g.startsWith("A")) return <Chip size="small" label={g} color="success" sx={{ fontWeight: 800 }} />;
+    if (g.startsWith("B")) return <Chip size="small" label={g} color="primary" sx={{ fontWeight: 800 }} />;
+    if (g.startsWith("C")) return <Chip size="small" label={g} color="warning" sx={{ fontWeight: 800 }} />;
+    if (g.startsWith("D")) return <Chip size="small" label={g} color="error" sx={{ fontWeight: 800 }} />;
     return <Chip size="small" label={g || "N/A"} sx={{ fontWeight: 800 }} />;
   };
 
   const stats = useMemo(() => {
     const total = results.length;
     const marks = results
-      .map((r) => Number(r.marks))
+      .map((r) => Number(r.marksObtained))
       .filter((n) => Number.isFinite(n));
       
     const subjects = new Set(
-      results.map((r) => r.subject?.subjectName || r.subject?.subjectCode).filter(Boolean)
+      results.map((r) => r.subjectName).filter(Boolean)
     );
     const totalMarks = marks.reduce((a, b) => a + b, 0);
     const subjectsCount = subjects.size;
     
     // Average
-    const avg = marks.length > 0 ? totalMarks / marks.length : 0;
+    const avg = summary ? Number(summary.percentage) : (marks.length > 0 ? totalMarks / marks.length : 0);
 
     // Best Result
     const bestResult = results.reduce((best, r) => {
-      const m = Number(r?.marks);
+      const m = Number(r?.marksObtained);
       if (!Number.isFinite(m)) return best;
       if (!best) return r;
-      return m > Number(best?.marks) ? r : best;
+      return m > Number(best?.marksObtained) ? r : best;
     }, null);
-    const bestMarks = bestResult && Number.isFinite(Number(bestResult.marks)) ? Number(bestResult.marks) : 0;
+    const bestMarks = bestResult && Number.isFinite(Number(bestResult.marksObtained)) ? Number(bestResult.marksObtained) : 0;
 
     const gradeCounts = results.reduce((acc, r) => {
       const g = String(r?.grade || "").toUpperCase();
-      const letter = g === "A" || g === "B" || g === "C" || g === "D" ? g : g[0];
-      if (letter === "A") acc.A += 1;
-      else if (letter === "B") acc.B += 1;
-      else if (letter === "C") acc.C += 1;
+      const letter = g === "A" || g === "B" || g === "C" || g === "D" || g === "F" ? g : g[0];
+      if (letter === "A" || letter === "A+") acc.A += 1;
+      else if (letter === "B" || letter === "B+") acc.B += 1;
+      else if (letter === "C" || letter === "C+") acc.C += 1;
       else if (letter === "D") acc.D += 1;
       return acc;
     }, { A: 0, B: 0, C: 0, D: 0 });
 
     return { total, avg, subjectsCount, bestResult, bestMarks, gradeCounts, recent: results.slice(0, 4) };
-  }, [results]);
+  }, [results, summary]);
 
   if (loading) {
     return (
@@ -123,8 +160,37 @@ function StudentDashboard() {
           <Typography variant="body1" color="text.secondary" sx={{ mt: 0.5, fontSize: { xs: "0.95rem", sm: "1rem" } }}>
             Welcome back! Here's an overview of your academic performance.
           </Typography>
-          <Box sx={{ mt: 2 }}>
-            <DownloadReportCardButton studentId={studentId} />
+          <Box sx={{ mt: 2, display: "flex", gap: 2, flexWrap: "wrap", alignItems: "center" }}>
+            {exams.length > 0 ? (
+              <>
+                <TextField
+                  select
+                  size="small"
+                  label="Select Exam"
+                  value={selectedExamId}
+                  onChange={(e) => setSelectedExamId(e.target.value)}
+                  sx={{ minWidth: 200, bgcolor: "background.paper" }}
+                >
+                  {exams.map((e) => (
+                    <MenuItem key={e.id} value={String(e.id)}>{e.examName}</MenuItem>
+                  ))}
+                </TextField>
+                {summary && (
+                  <Button
+                    variant="contained"
+                    startIcon={<PictureAsPdfIcon />}
+                    onClick={() => downloadExamReportCardPdf(summary)}
+                    sx={{ borderRadius: 2, fontWeight: 800 }}
+                  >
+                    Download Report Card
+                  </Button>
+                )}
+              </>
+            ) : (
+              <Typography variant="body2" color="error" sx={{ fontWeight: 700 }}>
+                No published exam results found.
+              </Typography>
+            )}
           </Box>
         </Box>
       </Fade>
@@ -233,8 +299,8 @@ function StudentDashboard() {
                       <TableBody>
                         {stats.recent.map((r, idx) => (
                           <TableRow key={idx} hover sx={{ "&:last-child td, &:last-child th": { border: 0 } }}>
-                            <TableCell sx={{ fontWeight: 600 }}>{r.subject?.subjectName || r.subject?.subjectCode || "N/A"}</TableCell>
-                            <TableCell align="center" sx={{ fontWeight: 700 }}>{r.marks}</TableCell>
+                            <TableCell sx={{ fontWeight: 600 }}>{r.subjectName || r.subjectCode || "N/A"}</TableCell>
+                            <TableCell align="center" sx={{ fontWeight: 700 }}>{r.marksObtained}</TableCell>
                             <TableCell align="center">{gradeToChip(r.grade)}</TableCell>
                           </TableRow>
                         ))}
@@ -258,7 +324,7 @@ function StudentDashboard() {
                   <EmojiEventsIcon sx={{ position: "absolute", top: 16, right: 16, opacity: 0.2, fontSize: 60 }} />
                   <Typography variant="body2" sx={{ fontWeight: 700, opacity: 0.9 }}>Top Performing Subject</Typography>
                   <Typography variant="h5" sx={{ fontWeight: 900, mt: 1 }}>
-                    {stats.bestResult ? (stats.bestResult.subject?.subjectName || stats.bestResult.subject?.subjectCode) : "N/A"}
+                    {stats.bestResult ? (stats.bestResult.subjectName || stats.bestResult.subjectCode) : "N/A"}
                   </Typography>
                   <Typography variant="h3" sx={{ fontWeight: 900, mt: 1 }}>
                     {stats.bestMarks > 0 ? stats.bestMarks : "-"}

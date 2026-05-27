@@ -27,6 +27,8 @@ import DeleteIcon from "@mui/icons-material/Delete";
 import EditIcon from "@mui/icons-material/Edit";
 import PublishIcon from "@mui/icons-material/Publish";
 import PictureAsPdfIcon from "@mui/icons-material/PictureAsPdf";
+import WarningAmberIcon from "@mui/icons-material/WarningAmber";
+import CheckCircleOutlinedIcon from "@mui/icons-material/CheckCircleOutlined";
 import { useToast } from "../components/ToastProvider";
 import ListToolbar from "../components/common/ListToolbar";
 import PaginationControls from "../components/common/PaginationControls";
@@ -64,6 +66,14 @@ function AdminExamManagement() {
   const [notifyOpen, setNotifyOpen] = useState(false);
   const [notifyForm, setNotifyForm] = useState({ title: "", message: "", targetRole: "ALL", examId: "" });
 
+  const [confirmDeleteOpen, setConfirmDeleteOpen] = useState(false);
+  const [examToDelete, setExamToDelete] = useState(null);
+  const [deletingExam, setDeletingExam] = useState(false);
+
+  const [confirmPublishOpen, setConfirmPublishOpen] = useState(false);
+  const [examToPublish, setExamToPublish] = useState(null);
+  const [publishingExam, setPublishingExam] = useState(false);
+
   const paginated = usePaginatedList("/exams/page", {
     defaultSize: 10,
     extraParams: { className: "", section: "", status: "", fromDate: "", toDate: "" },
@@ -92,70 +102,63 @@ function AdminExamManagement() {
   }, [showToast]);
 
   useEffect(() => {
-    if (tab === 1) loadTimetable(selectedExamId);
+    if (tab === 1) {
+      loadTimetable(selectedExamId);
+    }
   }, [tab, selectedExamId, loadTimetable]);
 
-  const openCreate = () => {
+  const openAdd = () => {
     setEditing(null);
     setForm(emptyExam);
     setDialogOpen(true);
   };
 
   const openEdit = async (id) => {
+    setEditing(id);
     try {
       const res = await API.get(`/exams/${id}`);
-      const e = res.data;
-      setEditing(id);
+      const ex = res.data;
       setForm({
-        examName: e.examName || "",
-        examType: e.examType || "",
-        className: e.className || "",
-        section: e.section || "",
-        startDate: e.startDate || "",
-        endDate: e.endDate || "",
-        status: e.status || "DRAFT",
-        subjects: (e.subjects || []).length
-          ? e.subjects.map((s) => ({
-              subjectId: s.subjectId,
-              teacherId: s.teacherId || "",
+        examName: ex.examName || "",
+        examType: ex.examType || "Term",
+        className: ex.className || "",
+        section: ex.section || "",
+        startDate: ex.startDate || "",
+        endDate: ex.endDate || "",
+        status: ex.status || "DRAFT",
+        subjects: ex.subjects?.length
+          ? ex.subjects.map((s) => ({
+              subjectId: s.subject?.id || "",
+              teacherId: s.teacher?.id || "",
               examDate: s.examDate || "",
-              startTime: s.startTime || "09:00",
-              endTime: s.endTime || "12:00",
-              maxMarks: s.maxMarks || 100,
-              passMarks: s.passMarks || 35,
+              startTime: s.startTime?.substring(0, 5) || "09:00",
+              endTime: s.endTime?.substring(0, 5) || "12:00",
+              maxMarks: s.totalMarks ?? 100,
+              passMarks: s.passMarks ?? 35,
               roomNumber: s.roomNumber || "",
             }))
-          : emptyExam.subjects,
+          : [{ subjectId: "", teacherId: "", examDate: "", startTime: "09:00", endTime: "12:00", maxMarks: 100, passMarks: 35, roomNumber: "" }],
       });
       setDialogOpen(true);
     } catch {
-      showToast("Failed to load exam.", "error");
+      showToast("Failed to fetch exam details.", "error");
     }
   };
 
   const handleSave = async () => {
-    if (!form.examName?.trim()) {
-      showToast("Exam name is required.", "warning");
+    if (!form.examName || !form.className) {
+      showToast("Exam Name and Class are required.", "warning");
       return;
-    }
-    if (form.startDate && form.endDate && form.startDate > form.endDate) {
-      showToast("Start date cannot be after end date.", "warning");
-      return;
-    }
-    // Validate subject dates are within main exam duration
-    for (const sub of form.subjects) {
-      if (sub.subjectId && sub.examDate) {
-        if ((form.startDate && sub.examDate < form.startDate) || (form.endDate && sub.examDate > form.endDate)) {
-          showToast("Subject exam date must be within exam duration", "warning");
-          return;
-        }
-      }
     }
     setSaving(true);
     try {
       const payload = {
         ...form,
-        subjects: form.subjects.filter((s) => s.subjectId),
+        subjects: form.subjects.map((s) => ({
+          ...s,
+          subjectId: Number(s.subjectId),
+          teacherId: s.teacherId ? Number(s.teacherId) : null,
+        })),
       };
       if (editing) {
         await API.put(`/exams/${editing}`, payload);
@@ -173,14 +176,24 @@ function AdminExamManagement() {
     }
   };
 
-  const handleDelete = async (id) => {
-    if (!window.confirm("Delete this exam?")) return;
+  const triggerDeleteConfirm = (exam) => {
+    setExamToDelete(exam);
+    setConfirmDeleteOpen(true);
+  };
+
+  const executeDelete = async () => {
+    if (!examToDelete) return;
+    setDeletingExam(true);
     try {
-      await API.delete(`/exams/${id}`);
-      showToast("Exam deleted.", "success");
+      await API.delete(`/exams/${examToDelete.id}`);
+      showToast("Exam deleted successfully.", "success");
       paginated.refresh();
-    } catch {
-      showToast("Delete failed.", "error");
+      setConfirmDeleteOpen(false);
+    } catch (err) {
+      showToast(err.response?.data?.message || "Delete failed.", "error");
+    } finally {
+      setDeletingExam(false);
+      setExamToDelete(null);
     }
   };
 
@@ -194,14 +207,24 @@ function AdminExamManagement() {
     }
   };
 
-  const handlePublish = async (id) => {
-    if (!window.confirm("Publish all exam results? Students will be able to view them.")) return;
+  const triggerPublishConfirm = (exam) => {
+    setExamToPublish(exam);
+    setConfirmPublishOpen(true);
+  };
+
+  const executePublish = async () => {
+    if (!examToPublish) return;
+    setPublishingExam(true);
     try {
-      await API.post(`/exams/${id}/publish`);
-      showToast("Results published.", "success");
+      await API.post(`/exams/${examToPublish.id}/publish`);
+      showToast("All exam results published successfully.", "success");
       paginated.refresh();
-    } catch {
-      showToast("Publish failed.", "error");
+      setConfirmPublishOpen(false);
+    } catch (err) {
+      showToast(err.response?.data?.message || "Publish failed.", "error");
+    } finally {
+      setPublishingExam(false);
+      setExamToPublish(null);
     }
   };
 
@@ -267,7 +290,7 @@ function AdminExamManagement() {
           <Button variant="outlined" onClick={() => setNotifyOpen(true)} sx={{ borderRadius: 2 }}>
             Announcement
           </Button>
-          <Button variant="contained" startIcon={<AddIcon />} onClick={openCreate} sx={{ borderRadius: 2 }}>
+          <Button variant="contained" startIcon={<AddIcon />} onClick={openAdd} sx={{ borderRadius: 2 }}>
             Create Exam
           </Button>
         </Box>
@@ -344,9 +367,9 @@ function AdminExamManagement() {
                       </TableCell>
                       <TableCell align="right">
                         <IconButton size="small" onClick={() => openEdit(e.id)}><EditIcon /></IconButton>
-                        <IconButton size="small" color="error" onClick={() => handleDelete(e.id)}><DeleteIcon /></IconButton>
+                        <IconButton size="small" color="error" onClick={() => triggerDeleteConfirm(e)}><DeleteIcon /></IconButton>
                         {!e.published && e.status === "COMPLETED" && (
-                          <IconButton size="small" color="success" onClick={() => handlePublish(e.id)} title="Publish results">
+                          <IconButton size="small" color="success" onClick={() => triggerPublishConfirm(e)} title="Publish results">
                             <PublishIcon />
                           </IconButton>
                         )}
@@ -517,6 +540,112 @@ function AdminExamManagement() {
         <DialogActions>
           <Button onClick={() => setNotifyOpen(false)}>Cancel</Button>
           <Button variant="contained" onClick={sendNotification}>Send</Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* ⚠️ DELETE EXAM CUSTOM MODAL */}
+      <Dialog
+        open={confirmDeleteOpen}
+        onClose={() => !deletingExam && setConfirmDeleteOpen(false)}
+        maxWidth="xs"
+        fullWidth
+        slotProps={{
+          backdrop: {
+            sx: {
+              backdropFilter: "blur(6px)",
+              backgroundColor: "rgba(0, 0, 0, 0.4)",
+            },
+          },
+        }}
+        PaperProps={{
+          sx: {
+            borderRadius: 3,
+            p: 1.5,
+          },
+        }}
+      >
+        <DialogContent sx={{ textAlign: "center", pt: 3 }}>
+          <WarningAmberIcon sx={{ fontSize: 60, color: "error.main", mb: 2 }} />
+          <Typography variant="h6" sx={{ fontWeight: 800, mb: 1 }}>
+            Delete Exam?
+          </Typography>
+          <Typography variant="body2" color="text.secondary" sx={{ mb: 2, lineHeight: 1.6 }}>
+            Are you sure you want to delete the exam{" "}
+            <strong>{examToDelete?.examName}</strong>? All subject configurations, timetables, and unsubmitted marks will be permanently lost. This action is irreversible.
+          </Typography>
+        </DialogContent>
+        <DialogActions sx={{ justifyContent: "center", gap: 2, pb: 2 }}>
+          <Button
+            variant="outlined"
+            onClick={() => setConfirmDeleteOpen(false)}
+            disabled={deletingExam}
+            sx={{ borderRadius: 2.5, px: 3, textTransform: "none", fontWeight: 700 }}
+          >
+            Cancel
+          </Button>
+          <Button
+            variant="contained"
+            color="error"
+            onClick={executeDelete}
+            disabled={deletingExam}
+            startIcon={deletingExam && <CircularProgress size={16} color="inherit" />}
+            sx={{ borderRadius: 2.5, px: 3, textTransform: "none", fontWeight: 700 }}
+          >
+            {deletingExam ? "Deleting..." : "Delete Exam"}
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* 📢 PUBLISH RESULTS CUSTOM MODAL */}
+      <Dialog
+        open={confirmPublishOpen}
+        onClose={() => !publishingExam && setConfirmPublishOpen(false)}
+        maxWidth="xs"
+        fullWidth
+        slotProps={{
+          backdrop: {
+            sx: {
+              backdropFilter: "blur(6px)",
+              backgroundColor: "rgba(0, 0, 0, 0.4)",
+            },
+          },
+        }}
+        PaperProps={{
+          sx: {
+            borderRadius: 3,
+            p: 1.5,
+          },
+        }}
+      >
+        <DialogContent sx={{ textAlign: "center", pt: 3 }}>
+          <CheckCircleOutlinedIcon sx={{ fontSize: 60, color: "success.main", mb: 2 }} />
+          <Typography variant="h6" sx={{ fontWeight: 800, mb: 1 }}>
+            Publish Results?
+          </Typography>
+          <Typography variant="body2" color="text.secondary" sx={{ mb: 2, lineHeight: 1.6 }}>
+            Are you sure you want to publish the results for exam{" "}
+            <strong>{examToPublish?.examName}</strong>? Students and teachers will receive notifications and will be able to view their final calculated semester grades immediately.
+          </Typography>
+        </DialogContent>
+        <DialogActions sx={{ justifyContent: "center", gap: 2, pb: 2 }}>
+          <Button
+            variant="outlined"
+            onClick={() => setConfirmPublishOpen(false)}
+            disabled={publishingExam}
+            sx={{ borderRadius: 2.5, px: 3, textTransform: "none", fontWeight: 700 }}
+          >
+            Cancel
+          </Button>
+          <Button
+            variant="contained"
+            color="primary"
+            onClick={executePublish}
+            disabled={publishingExam}
+            startIcon={publishingExam && <CircularProgress size={16} color="inherit" />}
+            sx={{ borderRadius: 2.5, px: 3, textTransform: "none", fontWeight: 700 }}
+          >
+            {publishingExam ? "Publishing..." : "Publish Results"}
+          </Button>
         </DialogActions>
       </Dialog>
     </Box>

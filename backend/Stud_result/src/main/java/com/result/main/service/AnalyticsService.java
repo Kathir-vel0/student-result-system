@@ -20,6 +20,7 @@ public class AnalyticsService {
     private final ResultRepository resultRepository;
     private final AttendanceRepository attendanceRepository;
     private final AuditLogRepository auditLogRepository;
+    private final ExamResultRepository examResultRepository;
 
     public AnalyticsService(
             StudentRepository studentRepository,
@@ -27,13 +28,15 @@ public class AnalyticsService {
             SubjectRepository subjectRepository,
             ResultRepository resultRepository,
             AttendanceRepository attendanceRepository,
-            AuditLogRepository auditLogRepository) {
+            AuditLogRepository auditLogRepository,
+            ExamResultRepository examResultRepository) {
         this.studentRepository = studentRepository;
         this.teacherRepository = teacherRepository;
         this.subjectRepository = subjectRepository;
         this.resultRepository = resultRepository;
         this.attendanceRepository = attendanceRepository;
         this.auditLogRepository = auditLogRepository;
+        this.examResultRepository = examResultRepository;
     }
 
     public Map<String, Object> getAdminAnalytics() {
@@ -111,16 +114,13 @@ public class AnalyticsService {
         Student student = studentRepository.findByStudentId(studentId)
                 .orElseThrow(() -> new RuntimeException("Student not found"));
 
-        List<Result> results = resultRepository.findByStudentStudentIdAndPublishedTrue(studentId);
-        if (results.isEmpty()) {
-            results = resultRepository.findByStudentStudentId(studentId);
-        }
+        List<com.result.main.entity.ExamResult> results = examResultRepository.findPublishedForStudent(studentId);
 
         double totalMarks = 0;
         int count = 0;
-        for (Result r : results) {
-            if (r.getMarks() != null) {
-                totalMarks += r.getMarks();
+        for (com.result.main.entity.ExamResult r : results) {
+            if (r.getMarksObtained() != null) {
+                totalMarks += r.getMarksObtained();
                 count++;
             }
         }
@@ -133,11 +133,16 @@ public class AnalyticsService {
                 .map(r -> Map.of(
                         "subject", r.getSubject() != null ? r.getSubject().getSubjectName() : "N/A",
                         "subjectCode", r.getSubject() != null ? r.getSubject().getSubjectCode() : "",
-                        "marks", r.getMarks() != null ? r.getMarks() : 0,
+                        "marks", r.getMarksObtained() != null ? r.getMarksObtained() : 0,
                         "grade", r.getGrade() != null ? r.getGrade() : ""
                 ))
                 .collect(Collectors.toList()));
-        stats.put("performanceTrend", buildPerformanceTrend(results));
+        stats.put("performanceTrend", results.stream()
+                .map(r -> Map.<String, Object>of(
+                        "subject", r.getSubject() != null ? r.getSubject().getSubjectName() : "N/A",
+                        "marks", r.getMarksObtained() != null ? r.getMarksObtained() : 0
+                ))
+                .collect(Collectors.toList()));
         stats.put("totalSubjects", count);
 
         return stats;
@@ -147,20 +152,20 @@ public class AnalyticsService {
         Student student = studentRepository.findByStudentId(studentId)
                 .orElseThrow(() -> new RuntimeException("Student not found"));
 
-        List<Result> results = resultRepository.findByStudentStudentId(studentId);
+        List<com.result.main.entity.ExamResult> results = examResultRepository.findPublishedForStudent(studentId);
         List<Map<String, Object>> subjects = new ArrayList<>();
         int totalMarks = 0;
         int maxMarks = results.size() * 100;
 
-        for (Result r : results) {
-            int marks = r.getMarks() != null ? r.getMarks() : 0;
+        for (com.result.main.entity.ExamResult r : results) {
+            int marks = r.getMarksObtained() != null ? r.getMarksObtained() : 0;
             totalMarks += marks;
             subjects.add(Map.of(
                     "subjectCode", r.getSubject() != null ? r.getSubject().getSubjectCode() : "",
                     "subjectName", r.getSubject() != null ? r.getSubject().getSubjectName() : "",
                     "marks", marks,
                     "grade", r.getGrade() != null ? r.getGrade() : "",
-                    "comments", r.getComments() != null ? r.getComments() : ""
+                    "comments", r.getRemarks() != null ? r.getRemarks() : ""
             ));
         }
 
@@ -182,7 +187,7 @@ public class AnalyticsService {
         data.put("rank", computeRank(studentId, percentage));
         data.put("attendancePercentage", computeStudentAttendancePercent(student.getId()));
         data.put("remarks", results.stream()
-                .map(Result::getComments)
+                .map(com.result.main.entity.ExamResult::getRemarks)
                 .filter(c -> c != null && !c.isBlank())
                 .findFirst()
                 .orElse("Keep up the good work."));
@@ -315,10 +320,10 @@ public class AnalyticsService {
         List<Student> all = studentRepository.findAll();
         List<Double> averages = new ArrayList<>();
         for (Student s : all) {
-            List<Result> res = resultRepository.findByStudentStudentId(s.getStudentId());
-            double sum = res.stream().filter(r -> r.getMarks() != null).mapToInt(Result::getMarks).sum();
-            long cnt = res.stream().filter(r -> r.getMarks() != null).count();
-            averages.add(cnt > 0 ? sum / cnt : 0);
+            List<com.result.main.entity.ExamResult> res = examResultRepository.findPublishedForStudent(s.getStudentId());
+            double sum = res.stream().filter(r -> r.getMarksObtained() != null).mapToInt(com.result.main.entity.ExamResult::getMarksObtained).sum();
+            long cnt = res.stream().filter(r -> r.getMarksObtained() != null).count();
+            averages.add(cnt > 0 ? sum / cnt : 0.0);
         }
         averages.sort(Collections.reverseOrder());
         double target = percentage;
