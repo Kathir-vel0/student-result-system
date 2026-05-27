@@ -9,6 +9,8 @@ import com.result.main.entity.Student;
 import com.result.main.entity.User;
 import com.result.main.repository.StudentRepository;
 import com.result.main.repository.UserRepository;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.access.AccessDeniedException;
 
 @RestController
 @RequestMapping("/api/students")
@@ -53,7 +55,17 @@ public class StudentController {
 
     // ================= ✅ NEW API (IMPORTANT) =================
     @GetMapping("/user/{userId}")
-    public Student getStudentByUserId(@PathVariable Long userId) {
+    public Student getStudentByUserId(@PathVariable Long userId, Authentication auth) {
+        if (auth != null) {
+            String role = auth.getAuthorities().iterator().next().getAuthority().replace("ROLE_", "");
+            if ("STUDENT".equals(role)) {
+                User authUser = userRepository.findByUsername(auth.getName())
+                        .orElseThrow(() -> new AccessDeniedException("Unauthorized"));
+                if (!authUser.getId().equals(userId)) {
+                    throw new AccessDeniedException("Access denied: You can only access your own profile.");
+                }
+            }
+        }
 
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("User not found"));

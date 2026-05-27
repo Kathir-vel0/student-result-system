@@ -23,7 +23,7 @@ public class AuditService {
     }
 
     @Async
-    public void log(String action, String performedBy, String role, String targetEntity, String description) {
+    public void log(String action, String performedBy, String role, String targetEntity, String description, String ipAddress) {
         AuditLog log = new AuditLog();
         log.setAction(action);
         log.setPerformedBy(performedBy != null ? performedBy : "SYSTEM");
@@ -31,8 +31,13 @@ public class AuditService {
         log.setTargetEntity(targetEntity);
         log.setDescription(description);
         log.setTimestamp(LocalDateTime.now());
-        log.setIpAddress(resolveClientIp());
+        log.setIpAddress(ipAddress);
         auditLogRepository.save(log);
+    }
+
+    @Async
+    public void log(String action, String performedBy, String role, String targetEntity, String description) {
+        log(action, performedBy, role, targetEntity, description, resolveClientIp());
     }
 
     public Page<AuditLog> search(String search, String action, String role, int page, int size) {
@@ -46,7 +51,7 @@ public class AuditService {
         );
     }
 
-    private String resolveClientIp() {
+    public String resolveClientIp() {
         try {
             ServletRequestAttributes attrs = (ServletRequestAttributes) RequestContextHolder.getRequestAttributes();
             if (attrs == null) return null;

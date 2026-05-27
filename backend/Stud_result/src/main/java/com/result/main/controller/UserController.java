@@ -141,12 +141,14 @@ public class UserController {
                 response.put("username", user.getUsername());
                 response.put("message", "Login Successful");
 
+                String ipAddress = auditService.resolveClientIp();
                 auditService.log(
                         roleString + "_LOGIN",
                         username,
                         roleString,
                         "User",
-                        "Successful login for user: " + username
+                        "Successful login for user: " + username,
+                        ipAddress
                 );
 
                 return ResponseEntity.ok(response);
@@ -183,8 +185,9 @@ public class UserController {
         userRepository.save(user);
         System.out.println("✅ Reset successful. Password hashed for user: " + username);
 
+        String ipAddress = auditService.resolveClientIp();
         auditService.log("PASSWORD_RESET", "admin", "ADMIN", "User",
-                "Password reset for user: " + username);
+                "Password reset for user: " + username, ipAddress);
 
         return ResponseEntity.ok(Map.of("message", "Password reset successful for user: " + username));
     }

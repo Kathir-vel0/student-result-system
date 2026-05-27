@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import API from "../api/api";
 import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
@@ -41,7 +41,7 @@ function ViewResults() {
   const [publishing, setPublishing] = useState(false);
   const [publishError, setPublishError] = useState("");
 
-  async function loadResults() {
+  const loadResults = useCallback(async () => {
     setLoading(true);
     try {
       const [resultsRes, studentsRes] = await Promise.all([
@@ -70,11 +70,11 @@ function ViewResults() {
     } finally {
       setLoading(false);
     }
-  }
+  }, [selectedClass]);
 
   useEffect(() => {
     loadResults();
-  }, []);
+  }, [loadResults]);
 
   const gradeToChip = (grade) => {
     const g = String(grade || "").toUpperCase();
@@ -154,7 +154,6 @@ function ViewResults() {
 
       const successCount = Number(res?.data?.success || 0);
       const failedCount = Number(res?.data?.failed || 0);
-      const totalAttempted = Number(res?.data?.totalAttempted || groupedStudents.length);
 
       if (successCount > 0) {
         showToast(

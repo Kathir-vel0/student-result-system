@@ -46,8 +46,9 @@ public class AttendanceService {
         attendance.setMarkedBy(markedBy);
 
         Attendance saved = attendanceRepository.save(attendance);
+        String ipAddress = auditService.resolveClientIp();
         auditService.log("ATTENDANCE_UPDATED", markedBy, role, "Attendance",
-                "Marked " + status + " for student " + studentId + " on " + date);
+                "Marked " + status + " for student " + studentId + " on " + date, ipAddress);
         return saved;
     }
 

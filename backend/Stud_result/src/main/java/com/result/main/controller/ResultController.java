@@ -94,9 +94,10 @@ public class ResultController {
         result.setPublished(false);
 
         Result saved = resultRepository.save(result);
+        String ipAddress = auditService.resolveClientIp();
         auditService.log(existing.isPresent() ? "MARKS_UPDATED" : "MARKS_ADDED",
                 "teacher", "TEACHER", "Result",
-                "Marks for student " + request.getStudentId() + " subject " + request.getSubjectCode());
+                "Marks for student " + request.getStudentId() + " subject " + request.getSubjectCode(), ipAddress);
         return saved;
     }
 
@@ -120,8 +121,9 @@ public class ResultController {
             r.setComments(updatedResult.getComments());
             r.setPublished(false); // Unpublish on update
             Result saved = resultRepository.save(r);
+            String ipAddress = auditService.resolveClientIp();
             auditService.log("MARKS_UPDATED", "teacher", "TEACHER", "Result",
-                    "Updated result id " + id);
+                    "Updated result id " + id, ipAddress);
             return saved;
         } else {
             return null;
@@ -207,8 +209,9 @@ public class ResultController {
             resp.put("totalAttempted", success + failed);
             resp.put("message", "Results published successfully in the database.");
 
+            String ipAddress = auditService.resolveClientIp();
             auditService.log("RESULTS_PUBLISHED", "admin", "ADMIN", "Result",
-                    "Published results for class " + request.getClassName() + " (" + success + " students)");
+                    "Published results for class " + request.getClassName() + " (" + success + " students)", ipAddress);
 
             return ResponseEntity.ok(resp);
         } catch (Exception e) {

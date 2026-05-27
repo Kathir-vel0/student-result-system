@@ -28,4 +28,7 @@ public interface ExamResultRepository extends JpaRepository<ExamResult, Long> {
     @Query("SELECT er FROM ExamResult er JOIN er.exam e WHERE er.student.studentId = :studentId " +
            "AND e.published = true AND er.published = true")
     List<ExamResult> findPublishedForStudent(@Param("studentId") String studentId);
+
+    @Query("SELECT er FROM ExamResult er JOIN er.exam e WHERE e.published = true AND er.published = true")
+    List<ExamResult> findAllPublishedResults();
 }

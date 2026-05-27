@@ -219,25 +219,58 @@ public class ExamAnalyticsService {
     private int computeRank(String studentId, Map<String, Double> studentPctByExam) {
         if (studentPctByExam.isEmpty()) return 0;
         double myAvg = studentPctByExam.values().stream().mapToDouble(Double::doubleValue).average().orElse(0);
-        List<Student> all = studentRepository.findAll();
-        long better = all.stream().filter(s -> {
-            List<ExamResult> r = examResultRepository.findPublishedForStudent(s.getStudentId());
-            if (r.isEmpty()) return false;
-            Map<Long, List<ExamResult>> byExam = r.stream().collect(Collectors.groupingBy(x -> x.getExam().getId()));
-            double avg = byExam.values().stream().mapToDouble(list -> {
-                int t = 0, m = 0;
-                for (ExamResult er : list) {
-                    ExamSubject es = examSubjectRepository.findByExamId(er.getExam().getId()).stream()
-                            .filter(sub -> sub.getSubject().getId().equals(er.getSubject().getId()))
-                            .findFirst().orElse(null);
+
+        // Fetch all published results and exam subjects in one go (2 queries instead of N+1 database statements)
+        List<ExamResult> allResults = examResultRepository.findAllPublishedResults();
+        List<ExamSubject> allSubjects = examSubjectRepository.findAll();
+
+        // Group subjects by exam ID and subject ID for O(1) in-memory lookup
+        Map<Long, Map<Long, ExamSubject>> subjectsLookup = allSubjects.stream()
+                .filter(es -> es.getExam() != null && es.getSubject() != null)
+                .collect(Collectors.groupingBy(
+                        es -> es.getExam().getId(),
+                        Collectors.toMap(es -> es.getSubject().getId(), es -> es, (a, b) -> a)
+                ));
+
+        // Group results by student studentId
+        Map<String, List<ExamResult>> resultsByStudent = allResults.stream()
+                .filter(er -> er.getStudent() != null)
+                .collect(Collectors.groupingBy(er -> er.getStudent().getStudentId()));
+
+        long better = 0;
+        for (Map.Entry<String, List<ExamResult>> entry : resultsByStudent.entrySet()) {
+            String sid = entry.getKey();
+            if (sid.equals(studentId)) continue; // Skip current student
+
+            List<ExamResult> studentResults = entry.getValue();
+            if (studentResults.isEmpty()) continue;
+
+            // Group student's results by exam ID
+            Map<Long, List<ExamResult>> byExam = studentResults.stream()
+                    .filter(er -> er.getExam() != null)
+                    .collect(Collectors.groupingBy(er -> er.getExam().getId()));
+
+            double avg = byExam.entrySet().stream().mapToDouble(examEntry -> {
+                Long examId = examEntry.getKey();
+                int totalMarks = 0;
+                int maxMarks = 0;
+                
+                Map<Long, ExamSubject> examSubjects = subjectsLookup.get(examId);
+                for (ExamResult er : examEntry.getValue()) {
+                    if (er.getSubject() == null) continue;
+                    ExamSubject es = examSubjects != null ? examSubjects.get(er.getSubject().getId()) : null;
                     int mm = es != null && es.getMaxMarks() != null ? es.getMaxMarks() : 100;
-                    t += er.getMarksObtained() != null ? er.getMarksObtained() : 0;
-                    m += mm;
+                    totalMarks += er.getMarksObtained() != null ? er.getMarksObtained() : 0;
+                    maxMarks += mm;
                 }
-                return m > 0 ? t * 100.0 / m : 0;
+                return maxMarks > 0 ? totalMarks * 100.0 / maxMarks : 0;
             }).average().orElse(0);
-            return avg > myAvg;
-        }).count();
+
+            if (avg > myAvg) {
+                better++;
+            }
+        }
+
         return (int) better + 1;
     }
 

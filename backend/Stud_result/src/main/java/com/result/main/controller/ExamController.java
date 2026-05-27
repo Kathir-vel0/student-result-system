@@ -3,8 +3,13 @@ package com.result.main.controller;
 import com.result.main.config.JwtUtils;
 import com.result.main.dto.*;
 import com.result.main.entity.ExamNotification;
+import com.result.main.entity.User;
+import com.result.main.entity.Student;
+import com.result.main.repository.UserRepository;
+import com.result.main.repository.StudentRepository;
 import com.result.main.service.ExamAnalyticsService;
 import com.result.main.service.ExamService;
+import org.springframework.security.access.AccessDeniedException;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
@@ -22,11 +27,16 @@ public class ExamController {
     private final ExamService examService;
     private final ExamAnalyticsService examAnalyticsService;
     private final JwtUtils jwtUtils;
+    private final UserRepository userRepository;
+    private final StudentRepository studentRepository;
 
-    public ExamController(ExamService examService, ExamAnalyticsService examAnalyticsService, JwtUtils jwtUtils) {
+    public ExamController(ExamService examService, ExamAnalyticsService examAnalyticsService, JwtUtils jwtUtils,
+                          UserRepository userRepository, StudentRepository studentRepository) {
         this.examService = examService;
         this.examAnalyticsService = examAnalyticsService;
         this.jwtUtils = jwtUtils;
+        this.userRepository = userRepository;
+        this.studentRepository = studentRepository;
     }
 
     @GetMapping("/page")
@@ -114,24 +124,28 @@ public class ExamController {
     }
 
     @GetMapping("/student/{studentId}/exams")
-    public ResponseEntity<List<Map<String, Object>>> studentExams(@PathVariable String studentId) {
+    public ResponseEntity<List<Map<String, Object>>> studentExams(@PathVariable String studentId, Authentication auth) {
+        checkStudentPrivilege(studentId, auth);
         return ResponseEntity.ok(examService.getStudentExams(studentId));
     }
 
     @GetMapping("/student/{studentId}/results")
-    public ResponseEntity<List<Map<String, Object>>> studentResults(@PathVariable String studentId) {
+    public ResponseEntity<List<Map<String, Object>>> studentResults(@PathVariable String studentId, Authentication auth) {
+        checkStudentPrivilege(studentId, auth);
         return ResponseEntity.ok(examService.getStudentPublishedResults(studentId));
     }
 
     @GetMapping("/student/{studentId}/results/{examId}")
     public ResponseEntity<List<Map<String, Object>>> studentExamResults(
-            @PathVariable String studentId, @PathVariable Long examId) {
+            @PathVariable String studentId, @PathVariable Long examId, Authentication auth) {
+        checkStudentPrivilege(studentId, auth);
         return ResponseEntity.ok(examService.getStudentExamResults(studentId, examId));
     }
 
     @GetMapping("/student/{studentId}/summary/{examId}")
     public ResponseEntity<Map<String, Object>> studentSummary(
-            @PathVariable String studentId, @PathVariable Long examId) {
+            @PathVariable String studentId, @PathVariable Long examId, Authentication auth) {
+        checkStudentPrivilege(studentId, auth);
         return ResponseEntity.ok(examService.getStudentExamSummary(studentId, examId));
     }
 
@@ -158,8 +172,24 @@ public class ExamController {
     }
 
     @GetMapping("/analytics/student/{studentId}")
-    public ResponseEntity<Map<String, Object>> studentAnalytics(@PathVariable String studentId) {
+    public ResponseEntity<Map<String, Object>> studentAnalytics(@PathVariable String studentId, Authentication auth) {
+        checkStudentPrivilege(studentId, auth);
         return ResponseEntity.ok(examAnalyticsService.getStudentAnalytics(studentId));
+    }
+
+    private void checkStudentPrivilege(String studentId, Authentication auth) {
+        if (auth != null) {
+            String role = role(auth);
+            if ("STUDENT".equals(role)) {
+                User user = userRepository.findByUsername(auth.getName())
+                        .orElseThrow(() -> new AccessDeniedException("Unauthorized"));
+                Student student = studentRepository.findByUser(user)
+                        .orElseThrow(() -> new AccessDeniedException("Student profile not found"));
+                if (!student.getStudentId().equals(studentId)) {
+                    throw new AccessDeniedException("Access denied: You can only access your own records.");
+                }
+            }
+        }
     }
 
     private String username(Authentication auth) {

@@ -87,8 +87,9 @@ public class TeacherController {
         teacher.setSubject(subject);
 
         Teacher savedTeacher = teacherRepository.save(teacher);
+        String ipAddress = auditService.resolveClientIp();
         auditService.log("TEACHER_CREATED", "admin", "ADMIN", "Teacher",
-                "Created teacher " + name + " (" + username + ") for subject " + subject.getSubjectName());
+                "Created teacher " + name + " (" + username + ") for subject " + subject.getSubjectName(), ipAddress);
         return ResponseEntity.status(HttpStatus.CREATED).body(savedTeacher);
     }
 
@@ -197,8 +198,9 @@ public class TeacherController {
             userRepository.delete(user);
         }
 
+        String ipAddress = auditService.resolveClientIp();
         auditService.log("TEACHER_DELETED", "admin", "ADMIN", "Teacher",
-                "Deleted teacher id " + id);
+                "Deleted teacher id " + id, ipAddress);
 
         return ResponseEntity.ok(Map.of("message", "Teacher and associated user account deleted successfully"));
     }

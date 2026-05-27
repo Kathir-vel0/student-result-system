@@ -80,8 +80,9 @@ public class ExamService {
         if (request.getSubjects() != null) {
             saveExamSubjects(saved, request.getSubjects());
         }
+        String ipAddress = auditService.resolveClientIp();
         auditService.log("EXAM_CREATED", username, role, "Exam",
-                "Created exam: " + saved.getExamName());
+                "Created exam: " + saved.getExamName(), ipAddress);
         notify("Exam Created", "New exam '" + saved.getExamName() + "' has been created.", "TEACHER", saved);
         return toExamDetail(examRepository.findById(saved.getId()).orElse(saved));
     }
@@ -99,8 +100,9 @@ public class ExamService {
             examSubjectRepository.deleteByExamId(id);
             saveExamSubjects(exam, request.getSubjects());
         }
+        String ipAddress = auditService.resolveClientIp();
         auditService.log("EXAM_UPDATED", username, role, "Exam",
-                "Updated exam: " + exam.getExamName());
+                "Updated exam: " + exam.getExamName(), ipAddress);
         notify("Exam Updated", "Exam '" + exam.getExamName() + "' has been updated.", "ALL", exam);
         return toExamDetail(examRepository.findById(id).orElse(exam));
     }
@@ -110,8 +112,9 @@ public class ExamService {
         Exam exam = examRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Exam not found"));
         examRepository.delete(exam);
+        String ipAddress = auditService.resolveClientIp();
         auditService.log("EXAM_DELETED", username, role, "Exam",
-                "Deleted exam: " + exam.getExamName());
+                "Deleted exam: " + exam.getExamName(), ipAddress);
     }
 
     @Transactional
@@ -129,7 +132,8 @@ public class ExamService {
             default -> "Exam status updated.";
         };
         notify("Exam Status: " + newStatus, msg, "ALL", exam);
-        auditService.log("EXAM_STATUS_CHANGED", username, role, "Exam", msg);
+        String ipAddress = auditService.resolveClientIp();
+        auditService.log("EXAM_STATUS_CHANGED", username, role, "Exam", msg, ipAddress);
         return toExamSummary(exam);
     }
 
@@ -181,8 +185,9 @@ public class ExamService {
                     "grade", result.getGrade() != null ? result.getGrade() : ""
             ));
         }
+        String ipAddress = auditService.resolveClientIp();
         auditService.log("EXAM_MARKS_SAVED", username, role, "ExamResult",
-                "Saved marks for exam " + exam.getExamName() + " subject " + subject.getSubjectCode());
+                "Saved marks for exam " + exam.getExamName() + " subject " + subject.getSubjectCode(), ipAddress);
         return saved;
     }
 
@@ -203,8 +208,9 @@ public class ExamService {
         notify("Marks Submitted for Review",
                 "Teacher submitted marks for '" + exam.getExamName() + "' for admin review.",
                 "ADMIN", exam);
+        String ipAddress = auditService.resolveClientIp();
         auditService.log("EXAM_MARKS_SUBMITTED", username, role, "Exam",
-                "Submitted marks for review: " + exam.getExamName());
+                "Submitted marks for review: " + exam.getExamName(), ipAddress);
     }
 
     @Transactional
@@ -222,8 +228,9 @@ public class ExamService {
         notify("Results Published",
                 "Results for '" + exam.getExamName() + "' are now available.",
                 "STUDENT", exam);
+        String ipAddress = auditService.resolveClientIp();
         auditService.log("EXAM_RESULTS_PUBLISHED", username, role, "Exam",
-                "Published results for: " + exam.getExamName());
+                "Published results for: " + exam.getExamName(), ipAddress);
         return toExamSummary(exam);
     }
 
