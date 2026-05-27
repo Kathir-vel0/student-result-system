@@ -15,6 +15,7 @@ import NotificationsNoneIcon from "@mui/icons-material/NotificationsNone";
 import SettingsOutlinedIcon from "@mui/icons-material/SettingsOutlined";
 import MenuIcon from "@mui/icons-material/Menu";
 import Avatar from "@mui/material/Avatar";
+import Badge from "@mui/material/Badge";
 import { useTheme } from "@mui/material/styles";
 import { useContext, useEffect, useState } from "react";
 import { ColorModeContext } from "../theme/ThemeProviderWrapper";
@@ -39,6 +40,7 @@ function Navbar() {
   const [notifications, setNotifications] = useState([
     { title: "Welcome", body: "Check exam updates and results here." },
   ]);
+  const [unreadCount, setUnreadCount] = useState(0);
 
   useEffect(() => {
     if (!role) return;
@@ -48,7 +50,10 @@ function Navbar() {
           title: n.title,
           body: n.message,
         }));
-        if (items.length) setNotifications(items);
+        if (items.length) {
+          setNotifications(items);
+          setUnreadCount(items.length);
+        }
       })
       .catch(() => {});
   }, [role]);
@@ -138,10 +143,15 @@ function Navbar() {
           <IconButton
             color="inherit"
             aria-label="Notifications"
-            onClick={(e) => setNotificationAnchor(e.currentTarget)}
+            onClick={(e) => {
+              setNotificationAnchor(e.currentTarget);
+              setUnreadCount(0);
+            }}
             sx={{ color: "text.primary" }}
           >
-            <NotificationsNoneIcon />
+            <Badge badgeContent={unreadCount} color="error">
+              <NotificationsNoneIcon />
+            </Badge>
           </IconButton>
 
           <Popover

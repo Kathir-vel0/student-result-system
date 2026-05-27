@@ -33,10 +33,12 @@ function StudentExamPortal() {
   const [exams, setExams] = useState([]);
   const [loading, setLoading] = useState(true);
   const [timetable, setTimetable] = useState([]);
-  const [selectedExam, setSelectedExam] = useState("");
+  const [selectedTimetableExam, setSelectedTimetableExam] = useState("");
+  const [selectedResultsExam, setSelectedResultsExam] = useState("");
   const [summary, setSummary] = useState(null);
   const [results, setResults] = useState([]);
   const [profile, setProfile] = useState(null);
+  const [downloadingHallTicket, setDownloadingHallTicket] = useState(false);
   const [notifications, setNotifications] = useState([]);
 
   useEffect(() => {
@@ -66,29 +68,60 @@ function StudentExamPortal() {
   }, [studentId, profile]);
 
   useEffect(() => {
-    if (!studentId || !selectedExam) {
+    if (!studentId || !selectedResultsExam) {
       setSummary(null);
       setResults([]);
       return;
     }
-    const exam = exams.find((e) => String(e.id) === String(selectedExam));
+    const exam = exams.find((e) => String(e.id) === String(selectedResultsExam));
     if (!exam?.published) {
       setSummary(null);
       setResults([]);
       return;
     }
-    API.get(`/exams/student/${studentId}/summary/${selectedExam}`)
+    API.get(`/exams/student/${studentId}/summary/${selectedResultsExam}`)
       .then((res) => setSummary(res.data))
       .catch(() => setSummary(null));
-    API.get(`/exams/student/${studentId}/results/${selectedExam}`)
+    API.get(`/exams/student/${studentId}/results/${selectedResultsExam}`)
       .then((res) => setResults(res.data || []))
       .catch(console.error);
-  }, [studentId, selectedExam, exams]);
+  }, [studentId, selectedResultsExam, exams]);
 
-  const handleHallTicket = () => {
-    const exam = exams.find((e) => String(e.id) === String(selectedExam));
-    const examTimetable = timetable.filter((t) => String(t.examId) === String(selectedExam));
-    downloadHallTicketPdf(profile || { studentId }, exam, examTimetable);
+  const handleHallTicket = async () => {
+    if (!selectedTimetableExam) {
+      showToast("Please select an exam first.", "warning");
+      return;
+    }
+    const exam = exams.find((e) => String(e.id) === String(selectedTimetableExam));
+    if (!exam) {
+      showToast("Selected exam not found.", "error");
+      return;
+    }
+    const examTimetable = timetable.filter((t) => String(t.examId) === String(selectedTimetableExam));
+    if (examTimetable.length === 0) {
+      showToast("No timetable exists for this exam. Hall ticket cannot be generated.", "warning");
+      return;
+    }
+
+    setDownloadingHallTicket(true);
+    try {
+      await new Promise((resolve) => setTimeout(resolve, 800));
+
+      const studentProfile = {
+        name: profile?.name || localStorage.getItem("username") || "Student",
+        studentId: profile?.studentId || studentId || localStorage.getItem("studentId") || "N/A",
+        className: profile?.className || "N/A",
+        section: profile?.section || "N/A"
+      };
+
+      downloadHallTicketPdf(studentProfile, exam, examTimetable);
+      showToast("Hall ticket downloaded successfully.", "success");
+    } catch (err) {
+      console.error("Hall ticket generation failed:", err);
+      showToast("Failed to generate hall ticket. Please try again.", "error");
+    } finally {
+      setDownloadingHallTicket(false);
+    }
   };
 
   const publishedExams = exams.filter((e) => e.published);
@@ -114,19 +147,19 @@ function StudentExamPortal() {
             <Box>
               <Button
                 variant="outlined"
-                startIcon={<BadgeIcon />}
+                startIcon={downloadingHallTicket ? <CircularProgress size={16} /> : <BadgeIcon />}
                 sx={{ mb: 2 }}
-                disabled={!selectedExam}
+                disabled={!selectedTimetableExam || downloadingHallTicket}
                 onClick={handleHallTicket}
               >
-                Download Hall Ticket
+                {downloadingHallTicket ? "Generating..." : "Download Hall Ticket"}
               </Button>
               <TextField
                 select
                 size="small"
                 label="Exam for hall ticket"
-                value={selectedExam}
-                onChange={(e) => setSelectedExam(e.target.value)}
+                value={selectedTimetableExam}
+                onChange={(e) => setSelectedTimetableExam(e.target.value)}
                 sx={{ ml: 2, minWidth: 200, mb: 2 }}
               >
                 {exams.map((e) => (
@@ -144,8 +177,8 @@ function StudentExamPortal() {
                 fullWidth
                 size="small"
                 label="Published exam results"
-                value={selectedExam}
-                onChange={(e) => setSelectedExam(e.target.value)}
+                value={selectedResultsExam}
+                onChange={(e) => setSelectedResultsExam(e.target.value)}
                 sx={{ maxWidth: 400, mb: 2 }}
               >
                 <MenuItem value="">Select exam...</MenuItem>
@@ -154,7 +187,7 @@ function StudentExamPortal() {
                 ))}
               </TextField>
 
-              {!selectedExam && (
+              {!selectedResultsExam && (
                 <Paper sx={{ p: 4, borderRadius: 3, textAlign: "center" }}>
                   <Typography color="text.secondary">
                     Results appear here after your admin publishes them.
@@ -164,7 +197,15 @@ function StudentExamPortal() {
 
               {summary && (
                 <Grid container spacing={2} sx={{ mb: 2 }}>
-                  <Grid item xs={6} md={3}>
+                  <Grid item xs={12} sm={6} md={2.4}>
+                    <Card sx={{ borderRadius: 3 }}>
+                      <CardContent>
+                        <Typography variant="caption" color="text.secondary">Total Marks</Typography>
+                        <Typography variant="h5" sx={{ fontWeight: 900 }}>{summary.totalMarks} / {summary.maxMarks}</Typography>
+                      </CardContent>
+                    </Card>
+                  </Grid>
+                  <Grid item xs={12} sm={6} md={2.4}>
                     <Card sx={{ borderRadius: 3 }}>
                       <CardContent>
                         <Typography variant="caption" color="text.secondary">Percentage</Typography>
@@ -172,29 +213,31 @@ function StudentExamPortal() {
                       </CardContent>
                     </Card>
                   </Grid>
-                  <Grid item xs={6} md={3}>
+                  <Grid item xs={12} sm={6} md={2.4}>
                     <Card sx={{ borderRadius: 3 }}>
                       <CardContent>
-                        <Typography variant="caption" color="text.secondary">Grade</Typography>
-                        <Typography variant="h5" sx={{ fontWeight: 900 }}>{summary.grade}</Typography>
+                        <Typography variant="caption" color="text.secondary">Grade / GPA</Typography>
+                        <Typography variant="h5" sx={{ fontWeight: 900 }}>{summary.grade} ({summary.gpa})</Typography>
                       </CardContent>
                     </Card>
                   </Grid>
-                  <Grid item xs={6} md={3}>
+                  <Grid item xs={12} sm={6} md={2.4}>
                     <Card sx={{ borderRadius: 3 }}>
                       <CardContent>
-                        <Typography variant="caption" color="text.secondary">GPA</Typography>
-                        <Typography variant="h5" sx={{ fontWeight: 900 }}>{summary.gpa}</Typography>
+                        <Typography variant="caption" color="text.secondary">Status</Typography>
+                        <Typography variant="h5" sx={{ fontWeight: 900, color: summary.grade === "F" ? "error.main" : "success.main" }}>
+                          {summary.grade === "F" ? "FAILED" : "PASSED"}
+                        </Typography>
                       </CardContent>
                     </Card>
                   </Grid>
-                  <Grid item xs={6} md={3}>
+                  <Grid item xs={12} sm={6} md={2.4}>
                     <Button
                       fullWidth
                       variant="contained"
                       startIcon={<PictureAsPdfIcon />}
                       onClick={() => downloadExamReportCardPdf(summary)}
-                      sx={{ height: "100%", borderRadius: 3 }}
+                      sx={{ height: "100%", py: { xs: 1.5, md: 0 }, borderRadius: 3 }}
                     >
                       Report PDF
                     </Button>

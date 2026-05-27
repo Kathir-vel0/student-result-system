@@ -49,13 +49,15 @@ export function downloadHallTicketPdf(student, exam, timetableEntries) {
 
   let y = 38;
   doc.setFontSize(11);
-  doc.text(`Student: ${student?.name || "N/A"}`, 14, y);
+  doc.text(`Institution: ResultSys Education Network`, 14, y);
+  y += 7;
+  doc.text(`Student Name: ${student?.name || "N/A"}`, 14, y);
   y += 7;
   doc.text(`Student ID: ${student?.studentId || "N/A"}`, 14, y);
   y += 7;
-  doc.text(`Class: ${student?.className || "—"}  Section: ${student?.section || "—"}`, 14, y);
+  doc.text(`Class: ${student?.className || "—"}    Section: ${student?.section || "—"}`, 14, y);
   y += 7;
-  doc.text(`Exam: ${exam?.examName || "—"}  |  Type: ${exam?.examType || "—"}`, 14, y);
+  doc.text(`Exam Name: ${exam?.examName || "—"}    Type: ${exam?.examType || "—"}`, 14, y);
   y += 10;
 
   const rows = (timetableEntries || []).map((e) => [

@@ -407,6 +407,19 @@ public class ExamService {
     private void saveExamSubjects(Exam exam, List<ExamSubjectRequest> subjects) {
         for (ExamSubjectRequest sr : subjects) {
             if (sr.getSubjectId() == null) continue;
+            
+            // Validate subject date is within main exam duration
+            if (sr.getExamDate() != null) {
+                if (exam.getStartDate() != null && sr.getExamDate().isBefore(exam.getStartDate())) {
+                    throw new org.springframework.web.server.ResponseStatusException(
+                            org.springframework.http.HttpStatus.BAD_REQUEST, "Subject exam date must be within exam duration");
+                }
+                if (exam.getEndDate() != null && sr.getExamDate().isAfter(exam.getEndDate())) {
+                    throw new org.springframework.web.server.ResponseStatusException(
+                            org.springframework.http.HttpStatus.BAD_REQUEST, "Subject exam date must be within exam duration");
+                }
+            }
+
             ExamSubject es = new ExamSubject();
             es.setExam(exam);
             es.setSubject(subjectRepository.findById(sr.getSubjectId())

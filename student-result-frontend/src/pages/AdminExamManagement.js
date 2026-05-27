@@ -138,6 +138,19 @@ function AdminExamManagement() {
       showToast("Exam name is required.", "warning");
       return;
     }
+    if (form.startDate && form.endDate && form.startDate > form.endDate) {
+      showToast("Start date cannot be after end date.", "warning");
+      return;
+    }
+    // Validate subject dates are within main exam duration
+    for (const sub of form.subjects) {
+      if (sub.subjectId && sub.examDate) {
+        if ((form.startDate && sub.examDate < form.startDate) || (form.endDate && sub.examDate > form.endDate)) {
+          showToast("Subject exam date must be within exam duration", "warning");
+          return;
+        }
+      }
+    }
     setSaving(true);
     try {
       const payload = {
@@ -210,6 +223,30 @@ function AdminExamManagement() {
       const subjects = [...prev.subjects];
       subjects[idx] = { ...subjects[idx], [field]: value };
       return { ...prev, subjects };
+    });
+  };
+
+  const handleStartDateChange = (newStart) => {
+    setForm((prev) => {
+      const updatedSubjects = prev.subjects.map((sub) => {
+        if (sub.examDate && newStart && sub.examDate < newStart) {
+          return { ...sub, examDate: "" };
+        }
+        return sub;
+      });
+      return { ...prev, startDate: newStart, subjects: updatedSubjects };
+    });
+  };
+
+  const handleEndDateChange = (newEnd) => {
+    setForm((prev) => {
+      const updatedSubjects = prev.subjects.map((sub) => {
+        if (sub.examDate && newEnd && sub.examDate > newEnd) {
+          return { ...sub, examDate: "" };
+        }
+        return sub;
+      });
+      return { ...prev, endDate: newEnd, subjects: updatedSubjects };
     });
   };
 
@@ -395,10 +432,10 @@ function AdminExamManagement() {
               <TextField fullWidth label="Section" value={form.section} onChange={(e) => setForm({ ...form, section: e.target.value })} />
             </Grid>
             <Grid item xs={6} md={4}>
-              <TextField fullWidth type="date" label="Start" InputLabelProps={{ shrink: true }} value={form.startDate} onChange={(e) => setForm({ ...form, startDate: e.target.value })} />
+              <TextField fullWidth type="date" label="Start" InputLabelProps={{ shrink: true }} value={form.startDate} onChange={(e) => handleStartDateChange(e.target.value)} />
             </Grid>
             <Grid item xs={6} md={4}>
-              <TextField fullWidth type="date" label="End" InputLabelProps={{ shrink: true }} value={form.endDate} onChange={(e) => setForm({ ...form, endDate: e.target.value })} />
+              <TextField fullWidth type="date" label="End" InputLabelProps={{ shrink: true }} value={form.endDate} onChange={(e) => handleEndDateChange(e.target.value)} />
             </Grid>
           </Grid>
           <Typography variant="subtitle2" sx={{ mt: 3, mb: 1, fontWeight: 800 }}>Subjects & Schedule</Typography>
@@ -416,7 +453,7 @@ function AdminExamManagement() {
                 </TextField>
               </Grid>
               <Grid item xs={6} md={2}>
-                <TextField fullWidth size="small" type="date" label="Date" InputLabelProps={{ shrink: true }} value={row.examDate} onChange={(e) => updateSubjectRow(idx, "examDate", e.target.value)} />
+                <TextField fullWidth size="small" type="date" label="Date" InputLabelProps={{ shrink: true }} inputProps={{ min: form.startDate, max: form.endDate }} value={row.examDate} onChange={(e) => updateSubjectRow(idx, "examDate", e.target.value)} />
               </Grid>
               <Grid item xs={3} md={1}>
                 <TextField fullWidth size="small" label="Start" value={row.startTime} onChange={(e) => updateSubjectRow(idx, "startTime", e.target.value)} />

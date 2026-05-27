@@ -53,6 +53,30 @@ function TeacherDashboard() {
     };
   }, []);
 
+  const [notifications, setNotifications] = useState([]);
+  const [notificationsLoading, setNotificationsLoading] = useState(true);
+
+  useEffect(() => {
+    let cancelled = false;
+    async function loadNotifications() {
+      setNotificationsLoading(true);
+      try {
+        const res = await API.get("/exams/notifications");
+        if (!cancelled) {
+          setNotifications(res.data || []);
+        }
+      } catch (err) {
+        console.error("Error loading notifications:", err);
+      } finally {
+        if (!cancelled) setNotificationsLoading(false);
+      }
+    }
+    loadNotifications();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
   return (
     <Box>
       <Fade in={true} timeout={800}>
@@ -181,6 +205,31 @@ function TeacherDashboard() {
                   </Button>
                 </CardContent>
               </Card>
+              <Typography variant="h6" sx={{ fontWeight: 900, mb: 2 }}>Announcements</Typography>
+              <Paper sx={{ p: 2, borderRadius: 4, mb: 3, boxShadow: "0 4px 20px rgba(0,0,0,0.03)" }}>
+                {notificationsLoading ? (
+                  <Box sx={{ display: "flex", justifyContent: "center", py: 2 }}>
+                    <CircularProgress size={24} />
+                  </Box>
+                ) : notifications.length === 0 ? (
+                  <Typography color="text.secondary" variant="body2" align="center">
+                    No announcements yet.
+                  </Typography>
+                ) : (
+                  <List disablePadding>
+                    {notifications.map((n, idx) => (
+                      <ListItem key={n.id || idx} divider={idx < notifications.length - 1} sx={{ px: 0, py: 1 }}>
+                        <ListItemText
+                          primary={n.title}
+                          secondary={n.message}
+                          primaryTypographyProps={{ fontWeight: 800, variant: "subtitle2" }}
+                          secondaryTypographyProps={{ variant: "body2", color: "text.secondary" }}
+                        />
+                      </ListItem>
+                    ))}
+                  </List>
+                )}
+              </Paper>
 
               <Typography variant="h6" sx={{ fontWeight: 900, mb: 2 }}>Capabilities</Typography>
               <Paper sx={{ p: 0, borderRadius: 4, overflow: "hidden", boxShadow: "0 4px 20px rgba(0,0,0,0.03)" }}>
