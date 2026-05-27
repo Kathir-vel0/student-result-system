@@ -13,7 +13,6 @@ import ListItemText from "@mui/material/ListItemText";
 import Divider from "@mui/material/Divider";
 import ListItemIcon from "@mui/material/ListItemIcon";
 import NotificationsNoneIcon from "@mui/icons-material/NotificationsNone";
-import SettingsOutlinedIcon from "@mui/icons-material/SettingsOutlined";
 import MenuIcon from "@mui/icons-material/Menu";
 import Avatar from "@mui/material/Avatar";
 import Badge from "@mui/material/Badge";
@@ -33,7 +32,6 @@ function Navbar() {
   const { isDesktop, setMobileOpen } = useLayoutNav();
   const { toggleColorMode } = useContext(ColorModeContext);
   const [notificationAnchor, setNotificationAnchor] = useState(null);
-  const [settingsAnchor, setSettingsAnchor] = useState(null);
   const [profileAnchor, setProfileAnchor] = useState(null);
 
   const role = localStorage.getItem("role");
@@ -66,7 +64,6 @@ function Navbar() {
   }, [role]);
 
   const openNotifications = Boolean(notificationAnchor);
-  const openSettings = Boolean(settingsAnchor);
 
   const handleLogout = () => {
     localStorage.clear();
@@ -75,7 +72,6 @@ function Navbar() {
 
   const profileRoute = role === "TEACHER" ? "/teacher-profile" : "/view-profile";
   const isAdmin = role === "ADMIN";
-  const showNavbarLogout = !!role;
 
   return (
     <AppBar
@@ -191,56 +187,7 @@ function Navbar() {
             </Box>
           </Popover>
 
-          <IconButton
-            color="inherit"
-            aria-label="Settings"
-            onClick={(e) => setSettingsAnchor(e.currentTarget)}
-            sx={{ color: "text.primary" }}
-          >
-            <SettingsOutlinedIcon />
-          </IconButton>
 
-          <Menu
-            anchorEl={settingsAnchor}
-            open={openSettings}
-            onClose={() => setSettingsAnchor(null)}
-            anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
-            transformOrigin={{ vertical: "top", horizontal: "right" }}
-          >
-            <MenuItem
-              onClick={() => {
-                toggleColorMode();
-                setSettingsAnchor(null);
-              }}
-            >
-              {theme.palette.mode === "dark"
-                ? "Switch to Light mode"
-                : "Switch to Dark mode"}
-            </MenuItem>
-
-            <MenuItem
-              onClick={() => {
-                setSettingsAnchor(null);
-                if (isAdmin) return;
-                navigate(profileRoute);
-              }}
-            >
-              View Profile
-            </MenuItem>
-
-            {showNavbarLogout && (
-              <MenuItem
-                onClick={() => {
-                  setSettingsAnchor(null);
-                  handleLogout();
-                }}
-              >
-                Logout
-              </MenuItem>
-            )}
-          </Menu>
-
-          <Divider orientation="vertical" flexItem sx={{ mx: { xs: 0.5, sm: 1.5 }, my: 1.5 }} />
 
           <Box
             onClick={(e) => setProfileAnchor(e.currentTarget)}
