@@ -48,7 +48,7 @@ const emptyExam = {
   startDate: "",
   endDate: "",
   status: "DRAFT",
-  subjects: [{ subjectId: "", teacherId: "", examDate: "", startTime: "09:00", endTime: "12:00", maxMarks: 100, passMarks: 35, roomNumber: "" }],
+  subjects: [{ subjectId: "", teacherId: "", examDate: "", startTime: "09:00", endTime: "12:00", totalMarks: 100, maxMarks: 100, passMarks: 35, roomNumber: "" }],
 };
 
 function AdminExamManagement() {
@@ -133,11 +133,12 @@ function AdminExamManagement() {
               examDate: s.examDate || "",
               startTime: s.startTime?.substring(0, 5) || "09:00",
               endTime: s.endTime?.substring(0, 5) || "12:00",
+              totalMarks: s.totalMarks ?? 100,
               maxMarks: s.totalMarks ?? 100,
               passMarks: s.passMarks ?? 35,
               roomNumber: s.roomNumber || "",
             }))
-          : [{ subjectId: "", teacherId: "", examDate: "", startTime: "09:00", endTime: "12:00", maxMarks: 100, passMarks: 35, roomNumber: "" }],
+          : [{ subjectId: "", teacherId: "", examDate: "", startTime: "09:00", endTime: "12:00", totalMarks: 100, maxMarks: 100, passMarks: 35, roomNumber: "" }],
       });
       setDialogOpen(true);
     } catch {
@@ -150,15 +151,68 @@ function AdminExamManagement() {
       showToast("Exam Name and Class are required.", "warning");
       return;
     }
+
+    const seenSubjects = new Set();
+    for (let i = 0; i < form.subjects.length; i++) {
+      const s = form.subjects[i];
+      
+      // 1. Subject ID check
+      if (!s.subjectId) {
+        showToast(`Subject is required and cannot be empty at row ${i + 1}.`, "warning");
+        return;
+      }
+      
+      // 2. Duplicate check
+      const subIdNum = Number(s.subjectId);
+      if (seenSubjects.has(subIdNum)) {
+        showToast("Duplicate subject schedules are not allowed in the same exam.", "warning");
+        return;
+      }
+      seenSubjects.add(subIdNum);
+
+      // 3. Subject Exam Date check
+      if (s.examDate) {
+        if (form.startDate && s.examDate < form.startDate) {
+          showToast(`Subject exam date must be within exam duration at row ${i + 1}.`, "warning");
+          return;
+        }
+        if (form.endDate && s.examDate > form.endDate) {
+          showToast(`Subject exam date must be within exam duration at row ${i + 1}.`, "warning");
+          return;
+        }
+      }
+
+      // 4. Pass marks vs total marks check
+      const total = s.totalMarks ?? s.maxMarks ?? 100;
+      const pass = s.passMarks ?? 35;
+      if (pass >= total) {
+        showToast(`Pass marks (${pass}) cannot exceed or equal total marks (${total}) at row ${i + 1}.`, "warning");
+        return;
+      }
+
+      // 5. Time constraint check
+      if (s.startTime && s.endTime) {
+        if (s.startTime >= s.endTime) {
+          showToast(`Subject exam start time must be before end time at row ${i + 1}.`, "warning");
+          return;
+        }
+      }
+    }
+
     setSaving(true);
     try {
       const payload = {
         ...form,
-        subjects: form.subjects.map((s) => ({
-          ...s,
-          subjectId: Number(s.subjectId),
-          teacherId: s.teacherId ? Number(s.teacherId) : null,
-        })),
+        subjects: form.subjects.map((s) => {
+          const total = s.totalMarks ?? s.maxMarks ?? 100;
+          return {
+            ...s,
+            subjectId: Number(s.subjectId),
+            teacherId: s.teacherId ? Number(s.teacherId) : null,
+            totalMarks: total,
+            maxMarks: total,
+          };
+        }),
       };
       if (editing) {
         await API.put(`/exams/${editing}`, payload);
@@ -190,7 +244,12 @@ function AdminExamManagement() {
       paginated.refresh();
       setConfirmDeleteOpen(false);
     } catch (err) {
-      showToast(err.response?.data?.message || "Delete failed.", "error");
+      console.error("DELETE EXAM FAILED:", {
+        status: err.response?.status,
+        message: err.response?.data?.message || err.message,
+        data: err.response?.data,
+      });
+      showToast(err.response?.data?.message || "Delete failed. Server error while deleting exam.", "error");
     } finally {
       setDeletingExam(false);
       setExamToDelete(null);
@@ -221,7 +280,12 @@ function AdminExamManagement() {
       paginated.refresh();
       setConfirmPublishOpen(false);
     } catch (err) {
-      showToast(err.response?.data?.message || "Publish failed.", "error");
+      console.error("PUBLISH EXAM FAILED:", {
+        status: err.response?.status,
+        message: err.response?.data?.message || err.message,
+        data: err.response?.data,
+      });
+      showToast(err.response?.data?.message || "Publish failed. Server error while publishing results.", "error");
     } finally {
       setPublishingExam(false);
       setExamToPublish(null);

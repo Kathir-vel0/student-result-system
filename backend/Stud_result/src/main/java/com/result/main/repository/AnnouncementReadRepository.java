@@ -14,6 +14,8 @@ public interface AnnouncementReadRepository extends JpaRepository<AnnouncementRe
 
     Optional<AnnouncementRead> findByAnnouncementIdAndUserId(Long announcementId, Long userId);
 
+    List<AnnouncementRead> findByAnnouncementId(Long announcementId);
+
     @Query("SELECT r.announcement.id FROM AnnouncementRead r WHERE r.user.id = :userId")
     List<Long> findReadAnnouncementIdsByUserId(@Param("userId") Long userId);
 }

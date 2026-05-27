@@ -27,6 +27,7 @@ public class ExamService {
     private final UserRepository userRepository;
     private final AuditService auditService;
     private final ResultCalculationService resultCalculationService;
+    private final AnnouncementReadRepository announcementReadRepository;
 
     public ExamService(
             ExamRepository examRepository,
@@ -38,7 +39,8 @@ public class ExamService {
             StudentRepository studentRepository,
             UserRepository userRepository,
             AuditService auditService,
-            ResultCalculationService resultCalculationService) {
+            ResultCalculationService resultCalculationService,
+            AnnouncementReadRepository announcementReadRepository) {
         this.examRepository = examRepository;
         this.examSubjectRepository = examSubjectRepository;
         this.examResultRepository = examResultRepository;
@@ -49,6 +51,7 @@ public class ExamService {
         this.userRepository = userRepository;
         this.auditService = auditService;
         this.resultCalculationService = resultCalculationService;
+        this.announcementReadRepository = announcementReadRepository;
     }
 
     public PageResponse<Map<String, Object>> searchExams(
@@ -98,11 +101,17 @@ public class ExamService {
         if (request.getStatus() != null && !request.getStatus().isBlank()) {
             exam.setStatus(ExamStatus.valueOf(request.getStatus().toUpperCase()));
         }
-        examRepository.save(exam);
+        
         if (request.getSubjects() != null) {
-            examSubjectRepository.deleteByExamId(id);
+            // Clear existing child relationships. orphanRemoval=true automatically issues DELETE SQL statements on flush!
+            exam.getSubjects().clear();
+            examRepository.saveAndFlush(exam);
+            // Save the new/updated subjects
             saveExamSubjects(exam, request.getSubjects());
+        } else {
+            examRepository.save(exam);
         }
+        
         String ipAddress = auditService.resolveClientIp();
         auditService.log("EXAM_UPDATED", username, role, "Exam",
                 "Updated exam: " + exam.getExamName(), ipAddress);
@@ -114,7 +123,35 @@ public class ExamService {
     public void deleteExam(Long id, String username, String role) {
         Exam exam = examRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Exam not found"));
+
+        // 1. Manually clean up all results associated with this exam to prevent FK violation
+        List<com.result.main.entity.ExamResult> results = examResultRepository.findByExamId(id);
+        if (results != null && !results.isEmpty()) {
+            examResultRepository.deleteAll(results);
+        }
+
+        // 2. Load all notification/announcements associated with this exam
+        List<ExamNotification> notifications = notificationRepository.findByExamIdOrderByCreatedAtDesc(id);
+        if (notifications != null && !notifications.isEmpty()) {
+            // Delete dependent read records for these announcements
+            for (ExamNotification n : notifications) {
+                List<AnnouncementRead> reads = announcementReadRepository.findByAnnouncementId(n.getId());
+                if (reads != null && !reads.isEmpty()) {
+                    announcementReadRepository.deleteAll(reads);
+                }
+            }
+            // Delete the notifications
+            notificationRepository.deleteAll(notifications);
+        }
+
+        // 3. Clear the mapped subjects list (orphanRemoval will automatically clean up exam_subjects)
+        exam.getSubjects().clear();
+        examRepository.saveAndFlush(exam);
+
+        // 4. Finally, delete the exam entity safely
         examRepository.delete(exam);
+        examRepository.flush();
+
         String ipAddress = auditService.resolveClientIp();
         auditService.log("EXAM_DELETED", username, role, "Exam",
                 "Deleted exam: " + exam.getExamName(), ipAddress);
@@ -429,8 +466,16 @@ public class ExamService {
     // --- helpers ---
 
     private void saveExamSubjects(Exam exam, List<ExamSubjectRequest> subjects) {
+        Set<Long> subjectIds = new HashSet<>();
         for (ExamSubjectRequest sr : subjects) {
-            if (sr.getSubjectId() == null) continue;
+            if (sr.getSubjectId() == null) {
+                throw new org.springframework.web.server.ResponseStatusException(
+                        org.springframework.http.HttpStatus.BAD_REQUEST, "Subject is required and cannot be empty");
+            }
+            if (!subjectIds.add(sr.getSubjectId())) {
+                throw new org.springframework.web.server.ResponseStatusException(
+                        org.springframework.http.HttpStatus.BAD_REQUEST, "Duplicate subject schedules are not allowed in the same exam");
+            }
             
             // Validate subject date is within main exam duration
             if (sr.getExamDate() != null) {
@@ -441,6 +486,24 @@ public class ExamService {
                 if (exam.getEndDate() != null && sr.getExamDate().isAfter(exam.getEndDate())) {
                     throw new org.springframework.web.server.ResponseStatusException(
                             org.springframework.http.HttpStatus.BAD_REQUEST, "Subject exam date must be within exam duration");
+                }
+            }
+
+            // Enforce passMarks < totalMarks
+            int totalMarks = sr.getTotalMarks() != null ? sr.getTotalMarks() : (sr.getMaxMarks() != null ? sr.getMaxMarks() : 100);
+            int passMarks = sr.getPassMarks() != null ? sr.getPassMarks() : 35;
+            if (passMarks >= totalMarks) {
+                throw new org.springframework.web.server.ResponseStatusException(
+                        org.springframework.http.HttpStatus.BAD_REQUEST, "Pass marks (" + passMarks + ") cannot exceed or equal total marks (" + totalMarks + ")");
+            }
+
+            // Enforce startTime < endTime
+            if (sr.getStartTime() != null && !sr.getStartTime().isBlank() && sr.getEndTime() != null && !sr.getEndTime().isBlank()) {
+                LocalTime start = LocalTime.parse(sr.getStartTime());
+                LocalTime end = LocalTime.parse(sr.getEndTime());
+                if (start.isAfter(end) || start.equals(end)) {
+                    throw new org.springframework.web.server.ResponseStatusException(
+                            org.springframework.http.HttpStatus.BAD_REQUEST, "Subject exam start time must be before end time");
                 }
             }
 
@@ -458,10 +521,13 @@ public class ExamService {
             if (sr.getEndTime() != null && !sr.getEndTime().isBlank()) {
                 es.setEndTime(LocalTime.parse(sr.getEndTime()));
             }
-            es.setTotalMarks(sr.getTotalMarks() != null ? sr.getTotalMarks() : (sr.getMaxMarks() != null ? sr.getMaxMarks() : 100));
-            es.setMaxMarks(sr.getTotalMarks() != null ? sr.getTotalMarks() : (sr.getMaxMarks() != null ? sr.getMaxMarks() : 100));
-            es.setPassMarks(sr.getPassMarks() != null ? sr.getPassMarks() : 35);
+            es.setTotalMarks(totalMarks);
+            es.setMaxMarks(totalMarks);
+            es.setPassMarks(passMarks);
             es.setRoomNumber(sr.getRoomNumber());
+            
+            // Bidirectional list sync to keep persistence state coherent in-memory
+            exam.getSubjects().add(es);
             examSubjectRepository.save(es);
         }
     }
