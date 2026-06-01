@@ -28,6 +28,27 @@ import { downloadExamReportCardPdf, downloadHallTicketPdf } from "../utils/examP
 
 function StudentExamPortal() {
   const { showToast } = useToast();
+
+  const formatDateTime = (dateStr) => {
+    if (!dateStr) return "";
+    try {
+      let formattedStr = dateStr;
+      if (typeof dateStr === "string" && !dateStr.endsWith("Z") && !/[+-]\d{2}:\d{2}$/.test(dateStr)) {
+        formattedStr = dateStr + "+05:30";
+      }
+      const d = new Date(formattedStr);
+      return d.toLocaleString("en-IN", {
+        timeZone: "Asia/Kolkata",
+        month: "short",
+        day: "numeric",
+        year: "numeric",
+        hour: "2-digit",
+        minute: "2-digit",
+      });
+    } catch {
+      return dateStr;
+    }
+  };
   const studentId = localStorage.getItem("studentId");
   const [tab, setTab] = useState(0);
   const [exams, setExams] = useState([]);
@@ -295,7 +316,9 @@ function StudentExamPortal() {
                     <CardContent>
                       <Typography fontWeight={800}>{n.title}</Typography>
                       <Typography variant="body2" color="text.secondary">{n.message}</Typography>
-                      <Typography variant="caption" color="text.disabled">{n.createdAt}</Typography>
+                      <Typography variant="caption" color="text.disabled">
+                        {formatDateTime(n.createdAt)}
+                      </Typography>
                     </CardContent>
                   </Card>
                 ))

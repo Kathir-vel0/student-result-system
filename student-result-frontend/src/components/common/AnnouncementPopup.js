@@ -107,8 +107,14 @@ function AnnouncementPopup() {
   const formatDateTime = (dateStr) => {
     if (!dateStr) return "";
     try {
-      const d = new Date(dateStr);
-      return d.toLocaleDateString(undefined, {
+      // If the string does not end with Z or a timezone offset, append the IST offset (+05:30)
+      let formattedStr = dateStr;
+      if (typeof dateStr === "string" && !dateStr.endsWith("Z") && !/[+-]\d{2}:\d{2}$/.test(dateStr)) {
+        formattedStr = dateStr + "+05:30";
+      }
+      const d = new Date(formattedStr);
+      return d.toLocaleString("en-IN", {
+        timeZone: "Asia/Kolkata",
         month: "short",
         day: "numeric",
         year: "numeric",
