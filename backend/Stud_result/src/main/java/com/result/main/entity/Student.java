@@ -19,7 +19,7 @@ public class Student {
 
     private String name;
 
-    @Lob
+    
     @Column(columnDefinition = "TEXT")
     private String photo;
 
