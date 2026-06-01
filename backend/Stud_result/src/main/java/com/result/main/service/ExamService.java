@@ -395,6 +395,7 @@ public class ExamService {
         if (req.getExamId() != null) {
             examRepository.findById(req.getExamId()).ifPresent(n::setExam);
         }
+        n.setCreatedAt(java.time.LocalDateTime.now());
         return notificationRepository.save(n);
     }
 
@@ -555,6 +556,7 @@ public class ExamService {
         n.setMessage(message);
         n.setTargetRole(role);
         n.setExam(exam);
+        n.setCreatedAt(java.time.LocalDateTime.now());
         notificationRepository.save(n);
     }
 

@@ -1,7 +1,6 @@
 package com.result.main.entity;
 
 import jakarta.persistence.*;
-import org.hibernate.annotations.CreationTimestamp;
 
 import java.time.LocalDateTime;
 
@@ -25,7 +24,6 @@ public class ExamNotification {
     @JoinColumn(name = "exam_id")
     private Exam exam;
 
-    @CreationTimestamp
     @Column(updatable = false)
     private LocalDateTime createdAt;
 
