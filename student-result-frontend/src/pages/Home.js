@@ -5,17 +5,11 @@ import Typography from "@mui/material/Typography";
 import Button from "@mui/material/Button";
 import Grid from "@mui/material/Grid";
 import Card from "@mui/material/Card";
-import CardContent from "@mui/material/CardContent";
 import Container from "@mui/material/Container";
 import Paper from "@mui/material/Paper";
 import SchoolIcon from "@mui/icons-material/School";
-import AssessmentIcon from "@mui/icons-material/Assessment";
-import PeopleAltIcon from "@mui/icons-material/PeopleAlt";
-import SecurityIcon from "@mui/icons-material/Security";
 import TimelineIcon from "@mui/icons-material/Timeline";
 import CheckIcon from "@mui/icons-material/Check";
-import ArrowForwardIcon from "@mui/icons-material/ArrowForward";
-import ArrowDownwardIcon from "@mui/icons-material/ArrowDownward";
 import LockIcon from "@mui/icons-material/Lock";
 import SpeedIcon from "@mui/icons-material/Speed";
 import BarChartIcon from "@mui/icons-material/BarChart";
@@ -30,7 +24,6 @@ import HistoryIcon from "@mui/icons-material/History";
 import CampaignIcon from "@mui/icons-material/Campaign";
 
 import Fade from "@mui/material/Fade";
-import Grow from "@mui/material/Grow";
 import Slide from "@mui/material/Slide";
 import { keyframes } from "@mui/system";
 
@@ -112,23 +105,6 @@ function AnimatedCounter({ end, duration = 2000 }) {
 function Home() {
   const words = ["Streamlined.", "Secure.", "Intelligent.", "Perfected."];
 
-  const features = [
-    {
-      title: "For Admins",
-      description: "Complete oversight: seamlessly manage students, teachers, subjects, and globally administer the platform.",
-      icon: <PeopleAltIcon sx={{ fontSize: 40 }} />
-    },
-    {
-      title: "For Teachers",
-      description: "Dedicated dashboard to intuitively review your classes, manage students, and input precise grades instantly.",
-      icon: <AssessmentIcon sx={{ fontSize: 40 }} />
-    },
-    {
-      title: "For Students",
-      description: "Instant access to your comprehensive digital report cards, grades, and academic performance history securely.",
-      icon: <SchoolIcon sx={{ fontSize: 40 }} />
-    }
-  ];
 
   return (
     <Box sx={{ minHeight: "100vh", bgcolor: "background.default", display: "flex", flexDirection: "column", overflowX: "hidden" }}>
@@ -342,21 +318,14 @@ function Home() {
       </Box>
 
       {/* 🌟 SECTION 1: BUILT FOR EVERY ROLE */}
-      <Box
-        sx={{
-          py: { xs: 12, md: 16 },
-          px: 2,
-          bgcolor: "background.default",
-          position: "relative",
-        }}
-      >
-        <Container maxWidth="lg">
-          <Box sx={{ textAlign: "center", mb: 10 }}>
+      <Box sx={{ py: "50px", bgcolor: "background.default", position: "relative" }}>
+        <Container sx={{ maxWidth: "1200px !important", margin: "0 auto", px: 3 }}>
+          <Box sx={{ textAlign: "center", mb: "32px" }}>
             <Typography
               variant="h3"
               sx={{
                 fontWeight: 950,
-                mb: 2.5,
+                mb: 1.5,
                 letterSpacing: -1.2,
                 color: "text.primary",
                 fontSize: { xs: "2.25rem", md: "3.25rem" },
@@ -380,9 +349,9 @@ function Home() {
             </Typography>
           </Box>
 
-          <Grid container spacing={5} alignItems="stretch">
+          <Grid container spacing={3} alignItems="stretch">
             {/* Card 1: Admin Portal */}
-            <Grid item xs={12} md={4}>
+            <Grid item xs={12} sm={6} md={4}>
               <Card
                 elevation={0}
                 sx={{
@@ -479,7 +448,7 @@ function Home() {
             </Grid>
 
             {/* Card 2: Teacher Portal */}
-            <Grid item xs={12} md={4}>
+            <Grid item xs={12} sm={6} md={4}>
               <Card
                 elevation={0}
                 sx={{
@@ -575,7 +544,7 @@ function Home() {
             </Grid>
 
             {/* Card 3: Student Portal */}
-            <Grid item xs={12} md={4}>
+            <Grid item xs={12} sm={6} md={4}>
               <Card
                 elevation={0}
                 sx={{
@@ -676,8 +645,7 @@ function Home() {
       {/* 🌟 SECTION 2: HOW IT WORKS */}
       <Box
         sx={{
-          py: { xs: 12, md: 16 },
-          px: 2,
+          py: "50px",
           bgcolor: "background.paper",
           borderTop: "1px solid",
           borderBottom: "1px solid",
@@ -686,13 +654,13 @@ function Home() {
           overflow: "hidden",
         }}
       >
-        <Container maxWidth="lg" sx={{ position: "relative", zIndex: 2 }}>
-          <Box sx={{ textAlign: "center", mb: 10 }}>
+        <Container sx={{ maxWidth: "1200px !important", margin: "0 auto", px: 3, position: "relative", zIndex: 2 }}>
+          <Box sx={{ textAlign: "center", mb: "32px" }}>
             <Typography
               variant="h3"
               sx={{
                 fontWeight: 950,
-                mb: 2.5,
+                mb: 1.5,
                 letterSpacing: -1.2,
                 color: "text.primary",
                 fontSize: { xs: "2.25rem", md: "3.25rem" },
@@ -732,7 +700,7 @@ function Home() {
               }}
             />
 
-            <Grid container spacing={4} justifyContent="center" alignItems="stretch">
+            <Grid container spacing={3} justifyContent="center" alignItems="stretch">
               {/* Step 1: Admin */}
               <Grid item xs={12} md={4} sx={{ zIndex: 2 }}>
                 <Box sx={{ display: "flex", flexDirection: "column", alignItems: "center", height: "100%" }}>
@@ -939,14 +907,14 @@ function Home() {
       </Box>
 
       {/* 🌟 SECTION 3: PLATFORM HIGHLIGHTS */}
-      <Box sx={{ py: { xs: 12, md: 16 }, px: 2, bgcolor: "background.default" }}>
-        <Container maxWidth="lg">
-          <Box sx={{ textAlign: "center", mb: 10 }}>
+      <Box sx={{ py: "50px", bgcolor: "background.default" }}>
+        <Container sx={{ maxWidth: "1200px !important", margin: "0 auto", px: 3 }}>
+          <Box sx={{ textAlign: "center", mb: "32px" }}>
             <Typography
               variant="h3"
               sx={{
                 fontWeight: 950,
-                mb: 2.5,
+                mb: 1.5,
                 letterSpacing: -1.2,
                 color: "text.primary",
                 fontSize: { xs: "2.25rem", md: "3.25rem" },
@@ -970,7 +938,7 @@ function Home() {
             </Typography>
           </Box>
 
-          <Grid container spacing={4}>
+          <Grid container spacing={3}>
             {/* Highlight 1: Secure Authentication */}
             <Grid item xs={12} sm={6} md={3}>
               <Card
@@ -1145,21 +1113,20 @@ function Home() {
       {/* 🌟 SECTION 4: EXPLORE THE PLATFORM */}
       <Box
         sx={{
-          py: { xs: 12, md: 16 },
-          px: 2,
+          py: "50px",
           bgcolor: "background.paper",
           borderTop: "1px solid",
           borderBottom: "1px solid",
           borderColor: "divider",
         }}
       >
-        <Container maxWidth="lg">
-          <Box sx={{ textAlign: "center", mb: 10 }}>
+        <Container sx={{ maxWidth: "1200px !important", margin: "0 auto", px: 3 }}>
+          <Box sx={{ textAlign: "center", mb: "32px" }}>
             <Typography
               variant="h3"
               sx={{
                 fontWeight: 950,
-                mb: 2.5,
+                mb: 1.5,
                 letterSpacing: -1.2,
                 color: "text.primary",
                 fontSize: { xs: "2rem", md: "3rem" },
@@ -1183,7 +1150,7 @@ function Home() {
             </Typography>
           </Box>
 
-          <Grid container spacing={5}>
+          <Grid container spacing={3}>
             {/* Preview 1: Admin */}
             <Grid item xs={12} md={4}>
               <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
@@ -1581,19 +1548,18 @@ function Home() {
       {/* 🌟 SECTION 5: WHY SCHOOLS CHOOSE RESULTSYS (NEW SECTION) */}
       <Box
         sx={{
-          py: { xs: 12, md: 16 },
-          px: 2,
+          py: "50px",
           bgcolor: "background.default",
           position: "relative",
         }}
       >
-        <Container maxWidth="lg">
-          <Box sx={{ textAlign: "center", mb: 10 }}>
+        <Container sx={{ maxWidth: "1200px !important", margin: "0 auto", px: 3 }}>
+          <Box sx={{ textAlign: "center", mb: "32px" }}>
             <Typography
               variant="h3"
               sx={{
                 fontWeight: 950,
-                mb: 2.5,
+                mb: 1.5,
                 letterSpacing: -1.2,
                 color: "text.primary",
                 fontSize: { xs: "2.25rem", md: "3.25rem" },
@@ -1617,7 +1583,7 @@ function Home() {
             </Typography>
           </Box>
 
-          <Grid container spacing={4}>
+          <Grid container spacing={3} justifyContent="center">
             {[
               {
                 title: "Attendance Management",
@@ -1650,7 +1616,7 @@ function Home() {
                 icon: <CampaignIcon sx={{ fontSize: 28 }} />,
               },
             ].map((item, idx) => (
-              <Grid item xs={12} sm={6} md={4} key={idx}>
+              <Grid item xs={12} sm={6} md={6} key={idx}>
                 <Card
                   elevation={0}
                   sx={{
@@ -1700,14 +1666,14 @@ function Home() {
       {/* 🌟 SECTION 6: PROFESSIONAL FOOTER */}
       <Box
         sx={{
-          py: 10,
+          py: "50px",
           px: { xs: 3, md: 4 },
           bgcolor: "background.paper",
           borderTop: "1px solid",
           borderColor: "divider",
         }}
       >
-        <Container maxWidth="lg">
+        <Container sx={{ maxWidth: "1200px !important", margin: "0 auto", px: 3 }}>
           <Grid container spacing={6} justifyContent="space-between">
             {/* Branding Column */}
             <Grid item xs={12} md={6}>
