@@ -156,8 +156,37 @@ public class ExamController {
     }
 
     @PostMapping("/notifications")
-    public ResponseEntity<ExamNotification> createNotification(@RequestBody ExamNotificationRequest request) {
+    public ResponseEntity<ExamNotification> createNotification(@RequestBody ExamNotificationRequest request, Authentication auth) {
+        if (!"ADMIN".equals(role(auth))) {
+            throw new AccessDeniedException("Access denied: Only administrators can create announcements.");
+        }
         return ResponseEntity.ok(examService.createNotification(request));
+    }
+
+    @GetMapping("/notifications/{id}")
+    public ResponseEntity<ExamNotification> getNotificationById(@PathVariable Long id, Authentication auth) {
+        if (!"ADMIN".equals(role(auth))) {
+            throw new AccessDeniedException("Access denied: Only administrators can view announcement details.");
+        }
+        return ResponseEntity.ok(examService.getNotificationById(id));
+    }
+
+    @PutMapping("/notifications/{id}")
+    public ResponseEntity<ExamNotification> updateNotification(
+            @PathVariable Long id, @RequestBody ExamNotificationRequest request, Authentication auth) {
+        if (!"ADMIN".equals(role(auth))) {
+            throw new AccessDeniedException("Access denied: Only administrators can update announcements.");
+        }
+        return ResponseEntity.ok(examService.updateNotification(id, request));
+    }
+
+    @DeleteMapping("/notifications/{id}")
+    public ResponseEntity<Void> deleteNotification(@PathVariable Long id, Authentication auth) {
+        if (!"ADMIN".equals(role(auth))) {
+            throw new AccessDeniedException("Access denied: Only administrators can delete announcements.");
+        }
+        examService.deleteNotification(id);
+        return ResponseEntity.noContent().build();
     }
 
     @GetMapping("/analytics/admin/{examId}")

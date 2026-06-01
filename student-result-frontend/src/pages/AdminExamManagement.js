@@ -29,6 +29,7 @@ import PublishIcon from "@mui/icons-material/Publish";
 import PictureAsPdfIcon from "@mui/icons-material/PictureAsPdf";
 import WarningAmberIcon from "@mui/icons-material/WarningAmber";
 import CheckCircleOutlinedIcon from "@mui/icons-material/CheckCircleOutlined";
+import VisibilityIcon from "@mui/icons-material/Visibility";
 import { useToast } from "../components/ToastProvider";
 import ListToolbar from "../components/common/ListToolbar";
 import PaginationControls from "../components/common/PaginationControls";
@@ -53,6 +54,18 @@ const emptyExam = {
 
 function AdminExamManagement() {
   const { showToast } = useToast();
+  const formatDateTime = (dateStr) => {
+    if (!dateStr) return "";
+    try {
+      const date = new Date(dateStr);
+      return date.toLocaleString("en-IN", {
+        dateStyle: "medium",
+        timeStyle: "short",
+      });
+    } catch {
+      return dateStr;
+    }
+  };
   const [tab, setTab] = useState(0);
   const [subjects, setSubjects] = useState([]);
   const [teachers, setTeachers] = useState([]);
@@ -65,6 +78,13 @@ function AdminExamManagement() {
   const [selectedExamId, setSelectedExamId] = useState(null);
   const [notifyOpen, setNotifyOpen] = useState(false);
   const [notifyForm, setNotifyForm] = useState({ title: "", message: "", targetRole: "ALL", examId: "" });
+  const [announcements, setAnnouncements] = useState([]);
+  const [announcementsLoading, setAnnouncementsLoading] = useState(false);
+  const [announcementViewMode, setAnnouncementViewMode] = useState("list"); // "list", "create", "edit", "view"
+  const [selectedAnnouncement, setSelectedAnnouncement] = useState(null);
+  const [deleteAnnouncementConfirmOpen, setDeleteAnnouncementConfirmOpen] = useState(false);
+  const [announcementToDelete, setAnnouncementToDelete] = useState(null);
+  const [deletingAnnouncement, setDeletingAnnouncement] = useState(false);
 
   const [confirmDeleteOpen, setConfirmDeleteOpen] = useState(false);
   const [examToDelete, setExamToDelete] = useState(null);
@@ -292,16 +312,79 @@ function AdminExamManagement() {
     }
   };
 
+  const fetchAnnouncements = useCallback(async () => {
+    setAnnouncementsLoading(true);
+    try {
+      const res = await API.get("/exams/notifications");
+      setAnnouncements(res.data || []);
+    } catch {
+      showToast("Failed to load announcements.", "error");
+    } finally {
+      setAnnouncementsLoading(false);
+    }
+  }, [showToast]);
+
+  useEffect(() => {
+    if (notifyOpen) {
+      fetchAnnouncements();
+      setAnnouncementViewMode("list");
+    }
+  }, [notifyOpen, fetchAnnouncements]);
+
   const sendNotification = async () => {
+    if (!notifyForm.title || !notifyForm.message) {
+      showToast("Title and Message are required.", "warning");
+      return;
+    }
     try {
       await API.post("/exams/notifications", {
         ...notifyForm,
         examId: notifyForm.examId ? Number(notifyForm.examId) : null,
       });
-      showToast("Announcement sent.", "success");
-      setNotifyOpen(false);
+      showToast("Announcement sent successfully.", "success");
+      fetchAnnouncements();
+      setAnnouncementViewMode("list");
     } catch {
       showToast("Failed to send notification.", "error");
+    }
+  };
+
+  const handleUpdateAnnouncement = async () => {
+    if (!notifyForm.title || !notifyForm.message) {
+      showToast("Title and Message are required.", "warning");
+      return;
+    }
+    try {
+      await API.put(`/exams/notifications/${selectedAnnouncement.id}`, {
+        ...notifyForm,
+        examId: notifyForm.examId ? Number(notifyForm.examId) : null,
+      });
+      showToast("Announcement updated successfully.", "success");
+      fetchAnnouncements();
+      setAnnouncementViewMode("list");
+    } catch {
+      showToast("Failed to update announcement.", "error");
+    }
+  };
+
+  const triggerDeleteAnnouncement = (announcement) => {
+    setAnnouncementToDelete(announcement);
+    setDeleteAnnouncementConfirmOpen(true);
+  };
+
+  const executeDeleteAnnouncement = async () => {
+    if (!announcementToDelete) return;
+    setDeletingAnnouncement(true);
+    try {
+      await API.delete(`/exams/notifications/${announcementToDelete.id}`);
+      showToast("Announcement deleted successfully.", "success");
+      fetchAnnouncements();
+      setDeleteAnnouncementConfirmOpen(false);
+    } catch {
+      showToast("Failed to delete announcement.", "error");
+    } finally {
+      setDeletingAnnouncement(false);
+      setAnnouncementToDelete(null);
     }
   };
 
@@ -590,20 +673,243 @@ function AdminExamManagement() {
         </DialogActions>
       </Dialog>
 
-      <Dialog open={notifyOpen} onClose={() => setNotifyOpen(false)} maxWidth="sm" fullWidth>
-        <DialogTitle>Exam Announcement</DialogTitle>
+      <Dialog 
+        open={notifyOpen} 
+        onClose={() => setNotifyOpen(false)} 
+        maxWidth={announcementViewMode === "list" ? "md" : "sm"} 
+        fullWidth
+        slotProps={{
+          backdrop: {
+            sx: {
+              backdropFilter: "blur(6px)",
+              backgroundColor: "rgba(0, 0, 0, 0.4)",
+            },
+          },
+        }}
+        PaperProps={{
+          sx: {
+            borderRadius: 3,
+            p: 1,
+          },
+        }}
+      >
+        <DialogTitle sx={{ fontWeight: 800, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+          {announcementViewMode === "list" && "Announcement Management"}
+          {announcementViewMode === "view" && "Announcement Details"}
+          {announcementViewMode === "create" && "Create Announcement"}
+          {announcementViewMode === "edit" && "Edit Announcement"}
+          {announcementViewMode === "list" && (
+            <Button
+              variant="contained"
+              size="small"
+              startIcon={<AddIcon />}
+              onClick={() => {
+                setNotifyForm({ title: "", message: "", targetRole: "ALL", examId: "" });
+                setAnnouncementViewMode("create");
+              }}
+              sx={{ borderRadius: 2 }}
+            >
+              Create
+            </Button>
+          )}
+        </DialogTitle>
+
         <DialogContent>
-          <TextField fullWidth margin="dense" label="Title" value={notifyForm.title} onChange={(e) => setNotifyForm({ ...notifyForm, title: e.target.value })} />
-          <TextField fullWidth margin="dense" multiline rows={3} label="Message" value={notifyForm.message} onChange={(e) => setNotifyForm({ ...notifyForm, message: e.target.value })} />
-          <TextField select fullWidth margin="dense" label="Target" value={notifyForm.targetRole} onChange={(e) => setNotifyForm({ ...notifyForm, targetRole: e.target.value })}>
-            <MenuItem value="ALL">Everyone</MenuItem>
-            <MenuItem value="STUDENT">Students</MenuItem>
-            <MenuItem value="TEACHER">Teachers</MenuItem>
-          </TextField>
+          {announcementViewMode === "list" && (
+            <>
+              {announcementsLoading ? (
+                <Box sx={{ display: "flex", justifyContent: "center", py: 6 }}>
+                  <CircularProgress />
+                </Box>
+              ) : announcements.length === 0 ? (
+                <Box sx={{ py: 6, textAlign: "center" }}>
+                  <Typography color="text.secondary">No announcements found.</Typography>
+                </Box>
+              ) : (
+                <TableContainer component={Paper} variant="outlined" sx={{ borderRadius: 3, maxHeight: 400 }}>
+                  <Table size="small" stickyHeader>
+                    <TableHead>
+                      <TableRow>
+                        <TableCell sx={{ fontWeight: 700 }}>Title</TableCell>
+                        <TableCell sx={{ fontWeight: 700 }}>Target</TableCell>
+                        <TableCell sx={{ fontWeight: 700 }}>Message</TableCell>
+                        <TableCell sx={{ fontWeight: 700 }}>Created At</TableCell>
+                        <TableCell sx={{ fontWeight: 700 }} align="right">Actions</TableCell>
+                      </TableRow>
+                    </TableHead>
+                    <TableBody>
+                      {announcements.map((e) => (
+                        <TableRow key={e.id} hover>
+                          <TableCell sx={{ fontWeight: 600 }}>{e.title}</TableCell>
+                          <TableCell>
+                            <Chip
+                              size="small"
+                              label={e.targetRole === "ALL" ? "Everyone" : e.targetRole === "STUDENT" ? "Students" : "Teachers"}
+                              color={e.targetRole === "STUDENT" ? "primary" : e.targetRole === "TEACHER" ? "info" : "default"}
+                              variant="outlined"
+                              sx={{ fontWeight: 600 }}
+                            />
+                          </TableCell>
+                          <TableCell sx={{ maxWidth: 200, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                            {e.message}
+                          </TableCell>
+                          <TableCell sx={{ fontSize: "0.75rem", color: "text.secondary" }}>
+                            {formatDateTime(e.createdAt)}
+                          </TableCell>
+                          <TableCell align="right" sx={{ whiteSpace: "nowrap" }}>
+                            <IconButton
+                              size="small"
+                              color="primary"
+                              onClick={() => {
+                                setSelectedAnnouncement(e);
+                                setAnnouncementViewMode("view");
+                              }}
+                              title="View details"
+                            >
+                              <VisibilityIcon fontSize="small" />
+                            </IconButton>
+                            <IconButton
+                              size="small"
+                              color="warning"
+                              onClick={() => {
+                                setSelectedAnnouncement(e);
+                                setNotifyForm({
+                                  title: e.title || "",
+                                  message: e.message || "",
+                                  targetRole: e.targetRole || "ALL",
+                                  examId: e.examId || ""
+                                });
+                                setAnnouncementViewMode("edit");
+                              }}
+                              title="Edit"
+                            >
+                              <EditIcon fontSize="small" />
+                            </IconButton>
+                            <IconButton
+                              size="small"
+                              color="error"
+                              onClick={() => triggerDeleteAnnouncement(e)}
+                              title="Delete"
+                            >
+                              <DeleteIcon fontSize="small" />
+                            </IconButton>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </TableContainer>
+              )}
+            </>
+          )}
+
+          {announcementViewMode === "view" && (
+            <Box sx={{ mt: 1 }}>
+              <Button
+                variant="text"
+                size="small"
+                onClick={() => setAnnouncementViewMode("list")}
+                sx={{ mb: 2, fontWeight: 700 }}
+              >
+                &larr; Back to List
+              </Button>
+              <Typography variant="h6" sx={{ fontWeight: 800, mb: 1 }}>
+                {selectedAnnouncement?.title}
+              </Typography>
+              <Box sx={{ mb: 2 }}>
+                <Chip
+                  size="small"
+                  label={selectedAnnouncement?.targetRole === "ALL" ? "Everyone" : selectedAnnouncement?.targetRole === "STUDENT" ? "Students" : "Teachers"}
+                  color={selectedAnnouncement?.targetRole === "STUDENT" ? "primary" : selectedAnnouncement?.targetRole === "TEACHER" ? "info" : "default"}
+                  variant="outlined"
+                  sx={{ fontWeight: 600 }}
+                />
+              </Box>
+              <Paper variant="outlined" sx={{ p: 2, mb: 2, bgcolor: "background.default", whiteSpace: "pre-line", minHeight: 100 }}>
+                <Typography variant="body2" sx={{ lineHeight: 1.6 }}>
+                  {selectedAnnouncement?.message}
+                </Typography>
+              </Paper>
+              <Typography variant="caption" color="text.secondary" display="block">
+                Created At: {formatDateTime(selectedAnnouncement?.createdAt)}
+              </Typography>
+            </Box>
+          )}
+
+          {(announcementViewMode === "create" || announcementViewMode === "edit") && (
+            <Box sx={{ display: "flex", flexDirection: "column", gap: 2, mt: 1 }}>
+              <Button
+                variant="text"
+                size="small"
+                onClick={() => setAnnouncementViewMode("list")}
+                sx={{ alignSelf: "flex-start", fontWeight: 700 }}
+              >
+                &larr; Back to List
+              </Button>
+              <TextField
+                fullWidth
+                label="Title"
+                placeholder="Enter announcement title..."
+                value={notifyForm.title}
+                onChange={(e) => setNotifyForm({ ...notifyForm, title: e.target.value })}
+                required
+              />
+              <TextField
+                fullWidth
+                multiline
+                rows={4}
+                label="Message"
+                placeholder="Enter announcement details..."
+                value={notifyForm.message}
+                onChange={(e) => setNotifyForm({ ...notifyForm, message: e.target.value })}
+                required
+              />
+              <TextField
+                select
+                fullWidth
+                label="Target Audience"
+                value={notifyForm.targetRole}
+                onChange={(e) => setNotifyForm({ ...notifyForm, targetRole: e.target.value })}
+              >
+                <MenuItem value="ALL">Everyone</MenuItem>
+                <MenuItem value="STUDENT">Students</MenuItem>
+                <MenuItem value="TEACHER">Teachers</MenuItem>
+              </TextField>
+            </Box>
+          )}
         </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setNotifyOpen(false)}>Cancel</Button>
-          <Button variant="contained" onClick={sendNotification}>Send</Button>
+
+        <DialogActions sx={{ px: 3, pb: 2 }}>
+          {announcementViewMode === "list" && (
+            <Button onClick={() => setNotifyOpen(false)} variant="outlined" sx={{ borderRadius: 2 }}>
+              Close
+            </Button>
+          )}
+          {announcementViewMode === "view" && (
+            <Button onClick={() => setAnnouncementViewMode("list")} variant="outlined" sx={{ borderRadius: 2 }}>
+              Back
+            </Button>
+          )}
+          {announcementViewMode === "create" && (
+            <>
+              <Button onClick={() => setAnnouncementViewMode("list")} sx={{ borderRadius: 2 }}>
+                Cancel
+              </Button>
+              <Button onClick={sendNotification} variant="contained" sx={{ borderRadius: 2 }}>
+                Send Announcement
+              </Button>
+            </>
+          )}
+          {announcementViewMode === "edit" && (
+            <>
+              <Button onClick={() => setAnnouncementViewMode("list")} sx={{ borderRadius: 2 }}>
+                Cancel
+              </Button>
+              <Button onClick={handleUpdateAnnouncement} variant="contained" color="warning" sx={{ borderRadius: 2 }}>
+                Save Changes
+              </Button>
+            </>
+          )}
         </DialogActions>
       </Dialog>
 
@@ -656,6 +962,59 @@ function AdminExamManagement() {
             sx={{ borderRadius: 2.5, px: 3, textTransform: "none", fontWeight: 700 }}
           >
             {deletingExam ? "Deleting..." : "Delete Exam"}
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* 📢 DELETE ANNOUNCEMENT CONFIRMATION MODAL */}
+      <Dialog
+        open={deleteAnnouncementConfirmOpen}
+        onClose={() => !deletingAnnouncement && setDeleteAnnouncementConfirmOpen(false)}
+        maxWidth="xs"
+        fullWidth
+        slotProps={{
+          backdrop: {
+            sx: {
+              backdropFilter: "blur(6px)",
+              backgroundColor: "rgba(0, 0, 0, 0.4)",
+            },
+          },
+        }}
+        PaperProps={{
+          sx: {
+            borderRadius: 3,
+            p: 1.5,
+          },
+        }}
+      >
+        <DialogContent sx={{ textAlign: "center", pt: 3 }}>
+          <WarningAmberIcon sx={{ fontSize: 60, color: "error.main", mb: 2 }} />
+          <Typography variant="h6" sx={{ fontWeight: 800, mb: 1 }}>
+            Delete Announcement?
+          </Typography>
+          <Typography variant="body2" color="text.secondary" sx={{ mb: 2, lineHeight: 1.6 }}>
+            Are you sure you want to delete the announcement{" "}
+            <strong>{announcementToDelete?.title}</strong>? This action cannot be undone.
+          </Typography>
+        </DialogContent>
+        <DialogActions sx={{ justifyContent: "center", gap: 2, pb: 2 }}>
+          <Button
+            variant="outlined"
+            onClick={() => setDeleteAnnouncementConfirmOpen(false)}
+            disabled={deletingAnnouncement}
+            sx={{ borderRadius: 2.5, px: 3, textTransform: "none", fontWeight: 700 }}
+          >
+            Cancel
+          </Button>
+          <Button
+            variant="contained"
+            color="error"
+            onClick={executeDeleteAnnouncement}
+            disabled={deletingAnnouncement}
+            startIcon={deletingAnnouncement && <CircularProgress size={16} color="inherit" />}
+            sx={{ borderRadius: 2.5, px: 3, textTransform: "none", fontWeight: 700 }}
+          >
+            {deletingAnnouncement ? "Deleting..." : "Delete"}
           </Button>
         </DialogActions>
       </Dialog>

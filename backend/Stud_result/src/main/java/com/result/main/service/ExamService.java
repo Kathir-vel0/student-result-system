@@ -400,9 +400,13 @@ public class ExamService {
     }
 
     public List<Map<String, Object>> getNotifications(String role, int limit) {
-        return notificationRepository.findForRole(role,
-                        org.springframework.data.domain.PageRequest.of(0, limit))
-                .stream()
+        List<ExamNotification> list;
+        if ("ADMIN".equals(role)) {
+            list = notificationRepository.findAll(org.springframework.data.domain.PageRequest.of(0, limit, org.springframework.data.domain.Sort.by(org.springframework.data.domain.Sort.Direction.DESC, "createdAt"))).getContent();
+        } else {
+            list = notificationRepository.findForRole(role, org.springframework.data.domain.PageRequest.of(0, limit));
+        }
+        return list.stream()
                 .map(n -> {
                     Map<String, Object> m = new LinkedHashMap<>();
                     m.put("id", n.getId());
@@ -414,6 +418,40 @@ public class ExamService {
                     return m;
                 })
                 .collect(Collectors.toList());
+    }
+
+    public ExamNotification getNotificationById(Long id) {
+        return notificationRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Announcement not found"));
+    }
+
+    @Transactional
+    public ExamNotification updateNotification(Long id, ExamNotificationRequest req) {
+        if (req.getTargetRole() == null || (!req.getTargetRole().equals("ALL") && !req.getTargetRole().equals("STUDENT") && !req.getTargetRole().equals("TEACHER"))) {
+            throw new IllegalArgumentException("Invalid announcement target: " + req.getTargetRole() + ". Only Everyone, Students, and Teachers targets are allowed.");
+        }
+        ExamNotification n = notificationRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Announcement not found"));
+        n.setTitle(req.getTitle());
+        n.setMessage(req.getMessage());
+        n.setTargetRole(req.getTargetRole());
+        if (req.getExamId() != null) {
+            examRepository.findById(req.getExamId()).ifPresent(n::setExam);
+        } else {
+            n.setExam(null);
+        }
+        return notificationRepository.save(n);
+    }
+
+    @Transactional
+    public void deleteNotification(Long id) {
+        ExamNotification n = notificationRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Announcement not found"));
+        List<AnnouncementRead> reads = announcementReadRepository.findByAnnouncementId(id);
+        if (reads != null && !reads.isEmpty()) {
+            announcementReadRepository.deleteAll(reads);
+        }
+        notificationRepository.delete(n);
     }
 
     public Map<String, Object> getStudentExamSummary(String studentId, Long examId) {
