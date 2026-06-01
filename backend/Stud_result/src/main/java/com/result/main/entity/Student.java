@@ -18,7 +18,7 @@ public class Student {
     private String name;
 
     @Lob
-    @Column(columnDefinition = "LONGTEXT")
+    @Column(columnDefinition = "TEXT")
     private String photo;
 
     private String className;
