@@ -339,6 +339,7 @@ function Home() {
             borderRadius: "50%", zIndex: 1, animation: `${float} 8s ease-in-out infinite`
           }}
         />
+      </Box>
 
       {/* 🌟 SECTION 1: BUILT FOR EVERY ROLE */}
       <Box
