@@ -349,296 +349,338 @@ function Home() {
             </Typography>
           </Box>
 
-          <Grid container spacing={3} alignItems="stretch">
+          <Box
+            sx={{
+              display: "flex",
+              flexDirection: "row",
+              flexWrap: "wrap",
+              justifyContent: "center",
+              alignItems: "stretch",
+              gap: 4,
+            }}
+          >
             {/* Card 1: Admin Portal */}
-            <Grid item xs={12} sm={6} md={4}>
-              <Card
-                elevation={0}
+            <Card
+              elevation={0}
+              sx={{
+                display: "flex",
+                flexDirection: "column",
+                width: "340px",
+                maxWidth: "100%",
+                minHeight: "380px",
+                borderRadius: "24px",
+                p: 4,
+                bgcolor: "background.paper",
+                border: "1px solid rgba(79, 70, 229, 0.08)",
+                boxShadow: "0 8px 30px rgba(0, 0, 0, 0.04)",
+                transition: "all 0.4s cubic-bezier(0.4, 0, 0.2, 1)",
+                "&:hover": {
+                  transform: "translateY(-10px)",
+                  boxShadow: "0 20px 40px rgba(79, 70, 229, 0.12)",
+                  borderColor: "primary.main",
+                },
+                "&:hover .feature-item": {
+                  transform: "translateX(6px)",
+                },
+              }}
+            >
+              <Box
                 sx={{
+                  mb: 2.5,
+                  width: 56,
+                  height: 56,
+                  borderRadius: "50%",
                   display: "flex",
-                  flexDirection: "column",
-                  height: "100%",
-                  borderRadius: 6,
-                  p: { xs: 4, md: 5 },
-                  bgcolor: (t) =>
-                    t.palette.mode === "dark"
-                      ? "rgba(30, 41, 59, 0.45)"
-                      : "rgba(255, 255, 255, 0.45)",
-                  backdropFilter: "blur(20px)",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  color: "primary.main",
+                  background: "linear-gradient(135deg, rgba(79,70,229,0.12) 0%, rgba(79,70,229,0.02) 100%)",
                   border: "1px solid",
-                  borderColor: "divider",
-                  boxShadow: "0 8px 32px rgba(0,0,0,0.02), 0 1px 8px rgba(0,0,0,0.01)",
-                  transition: "all 0.4s cubic-bezier(0.4, 0, 0.2, 1)",
+                  borderColor: "rgba(79,70,229,0.1)",
+                }}
+              >
+                <AdminPanelSettingsIcon sx={{ fontSize: 28 }} />
+              </Box>
+              <Typography variant="h5" sx={{ fontWeight: 900, mb: 2, color: "text.primary", letterSpacing: -0.5 }}>
+                Admin Portal
+              </Typography>
+              <Box sx={{ display: "flex", flexDirection: "column", gap: 1.5, flexGrow: 1, mb: 3 }}>
+                {[
+                  "Manage Students",
+                  "Manage Teachers",
+                  "Manage Subjects",
+                  "Audit Logs",
+                  "Announcements"
+                ].map((item, idx) => (
+                  <Box
+                    key={idx}
+                    className="feature-item"
+                    sx={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: 1.5,
+                      transition: "transform 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
+                      transitionDelay: `${idx * 40}ms`,
+                    }}
+                  >
+                    <Box
+                      sx={{
+                        width: 20,
+                        height: 20,
+                        borderRadius: "50%",
+                        bgcolor: "rgba(79,70,229,0.08)",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        flexShrink: 0,
+                      }}
+                    >
+                      <CheckIcon sx={{ fontSize: 12, color: "primary.main", fontWeight: 900 }} />
+                    </Box>
+                    <Typography variant="body2" color="text.secondary" sx={{ fontWeight: 500, fontSize: "0.9rem" }}>
+                      {item}
+                    </Typography>
+                  </Box>
+                ))}
+              </Box>
+              <Button
+                component={Link}
+                to="/login"
+                variant="text"
+                color="primary"
+                sx={{
+                  justifyContent: "flex-start",
+                  p: 0,
+                  fontWeight: 800,
+                  textTransform: "none",
+                  fontSize: "0.9rem",
+                  transition: "gap 0.2s",
+                  "& .arrow": { transition: "transform 0.2s" },
                   "&:hover": {
-                    transform: "translateY(-10px)",
-                    boxShadow: "0 24px 48px rgba(79,70,229,0.14), 0 4px 16px rgba(79,70,229,0.04)",
-                    borderColor: "primary.main",
+                    bgcolor: "transparent",
+                    color: "primary.dark",
+                    "& .arrow": { transform: "translateX(4px)" },
                   },
                 }}
               >
-                <Box
-                  sx={{
-                    mb: 4,
-                    p: 2,
-                    display: "inline-flex",
-                    borderRadius: 4,
-                    color: "primary.main",
-                    alignSelf: "flex-start",
-                    background: "linear-gradient(135deg, rgba(79,70,229,0.12) 0%, rgba(79,70,229,0.02) 100%)",
-                    border: "1px solid",
-                    borderColor: "rgba(79,70,229,0.1)",
-                  }}
-                >
-                  <AdminPanelSettingsIcon sx={{ fontSize: 32 }} />
-                </Box>
-                <Typography variant="h5" sx={{ fontWeight: 900, mb: 3, color: "text.primary", letterSpacing: -0.5 }}>
-                  Admin Portal
-                </Typography>
-                <Box sx={{ display: "flex", flexDirection: "column", gap: 2, flexGrow: 1, mb: 4 }}>
-                  {[
-                    "Manage Students",
-                    "Manage Teachers",
-                    "Manage Subjects",
-                    "Audit Logs",
-                    "Announcements"
-                  ].map((item, idx) => (
-                    <Box key={idx} sx={{ display: "flex", alignItems: "center", gap: 2 }}>
-                      <Box
-                        sx={{
-                          width: 20,
-                          height: 20,
-                          borderRadius: "50%",
-                          bgcolor: "rgba(79,70,229,0.08)",
-                          display: "flex",
-                          alignItems: "center",
-                          justifyContent: "center",
-                        }}
-                      >
-                        <CheckIcon sx={{ fontSize: 13, color: "primary.main", fontWeight: 900 }} />
-                      </Box>
-                      <Typography variant="body1" color="text.secondary" sx={{ fontWeight: 500, fontSize: "0.95rem" }}>
-                        {item}
-                      </Typography>
-                    </Box>
-                  ))}
-                </Box>
-                <Button
-                  component={Link}
-                  to="/login"
-                  variant="text"
-                  color="primary"
-                  sx={{
-                    justifyContent: "flex-start",
-                    p: 0,
-                    fontWeight: 800,
-                    textTransform: "none",
-                    fontSize: "0.95rem",
-                    transition: "gap 0.2s",
-                    "& .arrow": { transition: "transform 0.2s" },
-                    "&:hover": {
-                      bgcolor: "transparent",
-                      color: "primary.dark",
-                      "& .arrow": { transform: "translateX(4px)" },
-                    },
-                  }}
-                >
-                  Explore Portal <span className="arrow" style={{ marginLeft: "4px" }}>&rarr;</span>
-                </Button>
-              </Card>
-            </Grid>
+                Explore Portal <span className="arrow" style={{ marginLeft: "4px" }}>&rarr;</span>
+              </Button>
+            </Card>
 
             {/* Card 2: Teacher Portal */}
-            <Grid item xs={12} sm={6} md={4}>
-              <Card
-                elevation={0}
+            <Card
+              elevation={0}
+              sx={{
+                display: "flex",
+                flexDirection: "column",
+                width: "340px",
+                maxWidth: "100%",
+                minHeight: "380px",
+                borderRadius: "24px",
+                p: 4,
+                bgcolor: "background.paper",
+                border: "1px solid rgba(79, 70, 229, 0.08)",
+                boxShadow: "0 8px 30px rgba(0, 0, 0, 0.04)",
+                transition: "all 0.4s cubic-bezier(0.4, 0, 0.2, 1)",
+                "&:hover": {
+                  transform: "translateY(-10px)",
+                  boxShadow: "0 20px 40px rgba(79, 70, 229, 0.12)",
+                  borderColor: "primary.main",
+                },
+                "&:hover .feature-item": {
+                  transform: "translateX(6px)",
+                },
+              }}
+            >
+              <Box
                 sx={{
+                  mb: 2.5,
+                  width: 56,
+                  height: 56,
+                  borderRadius: "50%",
                   display: "flex",
-                  flexDirection: "column",
-                  height: "100%",
-                  borderRadius: 6,
-                  p: { xs: 4, md: 5 },
-                  bgcolor: (t) =>
-                    t.palette.mode === "dark"
-                      ? "rgba(30, 41, 59, 0.45)"
-                      : "rgba(255, 255, 255, 0.45)",
-                  backdropFilter: "blur(20px)",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  color: "primary.main",
+                  background: "linear-gradient(135deg, rgba(79,70,229,0.12) 0%, rgba(79,70,229,0.02) 100%)",
                   border: "1px solid",
-                  borderColor: "divider",
-                  boxShadow: "0 8px 32px rgba(0,0,0,0.02), 0 1px 8px rgba(0,0,0,0.01)",
-                  transition: "all 0.4s cubic-bezier(0.4, 0, 0.2, 1)",
+                  borderColor: "rgba(79,70,229,0.1)",
+                }}
+              >
+                <AssignmentIcon sx={{ fontSize: 28 }} />
+              </Box>
+              <Typography variant="h5" sx={{ fontWeight: 900, mb: 2, color: "text.primary", letterSpacing: -0.5 }}>
+                Teacher Portal
+              </Typography>
+              <Box sx={{ display: "flex", flexDirection: "column", gap: 1.5, flexGrow: 1, mb: 3 }}>
+                {[
+                  "Mark Attendance",
+                  "Upload Results",
+                  "Manage Exams",
+                  "Track Student Performance"
+                ].map((item, idx) => (
+                  <Box
+                    key={idx}
+                    className="feature-item"
+                    sx={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: 1.5,
+                      transition: "transform 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
+                      transitionDelay: `${idx * 40}ms`,
+                    }}
+                  >
+                    <Box
+                      sx={{
+                        width: 20,
+                        height: 20,
+                        borderRadius: "50%",
+                        bgcolor: "rgba(79,70,229,0.08)",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        flexShrink: 0,
+                      }}
+                    >
+                      <CheckIcon sx={{ fontSize: 12, color: "primary.main", fontWeight: 900 }} />
+                    </Box>
+                    <Typography variant="body2" color="text.secondary" sx={{ fontWeight: 500, fontSize: "0.9rem" }}>
+                      {item}
+                    </Typography>
+                  </Box>
+                ))}
+              </Box>
+              <Button
+                component={Link}
+                to="/login"
+                variant="text"
+                color="primary"
+                sx={{
+                  justifyContent: "flex-start",
+                  p: 0,
+                  fontWeight: 800,
+                  textTransform: "none",
+                  fontSize: "0.9rem",
+                  transition: "gap 0.2s",
+                  "& .arrow": { transition: "transform 0.2s" },
                   "&:hover": {
-                    transform: "translateY(-10px)",
-                    boxShadow: "0 24px 48px rgba(79,70,229,0.14), 0 4px 16px rgba(79,70,229,0.04)",
-                    borderColor: "primary.main",
+                    bgcolor: "transparent",
+                    color: "primary.dark",
+                    "& .arrow": { transform: "translateX(4px)" },
                   },
                 }}
               >
-                <Box
-                  sx={{
-                    mb: 4,
-                    p: 2,
-                    display: "inline-flex",
-                    borderRadius: 4,
-                    color: "primary.main",
-                    alignSelf: "flex-start",
-                    background: "linear-gradient(135deg, rgba(79,70,229,0.12) 0%, rgba(79,70,229,0.02) 100%)",
-                    border: "1px solid",
-                    borderColor: "rgba(79,70,229,0.1)",
-                  }}
-                >
-                  <AssignmentIcon sx={{ fontSize: 32 }} />
-                </Box>
-                <Typography variant="h5" sx={{ fontWeight: 900, mb: 3, color: "text.primary", letterSpacing: -0.5 }}>
-                  Teacher Portal
-                </Typography>
-                <Box sx={{ display: "flex", flexDirection: "column", gap: 2, flexGrow: 1, mb: 4 }}>
-                  {[
-                    "Mark Attendance",
-                    "Upload Results",
-                    "Manage Exams",
-                    "Track Student Performance"
-                  ].map((item, idx) => (
-                    <Box key={idx} sx={{ display: "flex", alignItems: "center", gap: 2 }}>
-                      <Box
-                        sx={{
-                          width: 20,
-                          height: 20,
-                          borderRadius: "50%",
-                          bgcolor: "rgba(79,70,229,0.08)",
-                          display: "flex",
-                          alignItems: "center",
-                          justifyContent: "center",
-                        }}
-                      >
-                        <CheckIcon sx={{ fontSize: 13, color: "primary.main", fontWeight: 900 }} />
-                      </Box>
-                      <Typography variant="body1" color="text.secondary" sx={{ fontWeight: 500, fontSize: "0.95rem" }}>
-                        {item}
-                      </Typography>
-                    </Box>
-                  ))}
-                </Box>
-                <Button
-                  component={Link}
-                  to="/login"
-                  variant="text"
-                  color="primary"
-                  sx={{
-                    justifyContent: "flex-start",
-                    p: 0,
-                    fontWeight: 800,
-                    textTransform: "none",
-                    fontSize: "0.95rem",
-                    transition: "gap 0.2s",
-                    "& .arrow": { transition: "transform 0.2s" },
-                    "&:hover": {
-                      bgcolor: "transparent",
-                      color: "primary.dark",
-                      "& .arrow": { transform: "translateX(4px)" },
-                    },
-                  }}
-                >
-                  Explore Portal <span className="arrow" style={{ marginLeft: "4px" }}>&rarr;</span>
-                </Button>
-              </Card>
-            </Grid>
+                Explore Portal <span className="arrow" style={{ marginLeft: "4px" }}>&rarr;</span>
+              </Button>
+            </Card>
 
             {/* Card 3: Student Portal */}
-            <Grid item xs={12} sm={6} md={4}>
-              <Card
-                elevation={0}
+            <Card
+              elevation={0}
+              sx={{
+                display: "flex",
+                flexDirection: "column",
+                width: "340px",
+                maxWidth: "100%",
+                minHeight: "380px",
+                borderRadius: "24px",
+                p: 4,
+                bgcolor: "background.paper",
+                border: "1px solid rgba(79, 70, 229, 0.08)",
+                boxShadow: "0 8px 30px rgba(0, 0, 0, 0.04)",
+                transition: "all 0.4s cubic-bezier(0.4, 0, 0.2, 1)",
+                "&:hover": {
+                  transform: "translateY(-10px)",
+                  boxShadow: "0 20px 40px rgba(79, 70, 229, 0.12)",
+                  borderColor: "primary.main",
+                },
+                "&:hover .feature-item": {
+                  transform: "translateX(6px)",
+                },
+              }}
+            >
+              <Box
                 sx={{
+                  mb: 2.5,
+                  width: 56,
+                  height: 56,
+                  borderRadius: "50%",
                   display: "flex",
-                  flexDirection: "column",
-                  height: "100%",
-                  borderRadius: 6,
-                  p: { xs: 4, md: 5 },
-                  bgcolor: (t) =>
-                    t.palette.mode === "dark"
-                      ? "rgba(30, 41, 59, 0.45)"
-                      : "rgba(255, 255, 255, 0.45)",
-                  backdropFilter: "blur(20px)",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  color: "primary.main",
+                  background: "linear-gradient(135deg, rgba(79,70,229,0.12) 0%, rgba(79,70,229,0.02) 100%)",
                   border: "1px solid",
-                  borderColor: "divider",
-                  boxShadow: "0 8px 32px rgba(0,0,0,0.02), 0 1px 8px rgba(0,0,0,0.01)",
-                  transition: "all 0.4s cubic-bezier(0.4, 0, 0.2, 1)",
+                  borderColor: "rgba(79,70,229,0.1)",
+                }}
+              >
+                <SchoolIcon sx={{ fontSize: 28 }} />
+              </Box>
+              <Typography variant="h5" sx={{ fontWeight: 900, mb: 2, color: "text.primary", letterSpacing: -0.5 }}>
+                Student Portal
+              </Typography>
+              <Box sx={{ display: "flex", flexDirection: "column", gap: 1.5, flexGrow: 1, mb: 3 }}>
+                {[
+                  "View Results",
+                  "Attendance Tracking",
+                  "Announcements",
+                  "Academic History"
+                ].map((item, idx) => (
+                  <Box
+                    key={idx}
+                    className="feature-item"
+                    sx={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: 1.5,
+                      transition: "transform 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
+                      transitionDelay: `${idx * 40}ms`,
+                    }}
+                  >
+                    <Box
+                      sx={{
+                        width: 20,
+                        height: 20,
+                        borderRadius: "50%",
+                        bgcolor: "rgba(79,70,229,0.08)",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        flexShrink: 0,
+                      }}
+                    >
+                      <CheckIcon sx={{ fontSize: 12, color: "primary.main", fontWeight: 900 }} />
+                    </Box>
+                    <Typography variant="body2" color="text.secondary" sx={{ fontWeight: 500, fontSize: "0.9rem" }}>
+                      {item}
+                    </Typography>
+                  </Box>
+                ))}
+              </Box>
+              <Button
+                component={Link}
+                to="/login"
+                variant="text"
+                color="primary"
+                sx={{
+                  justifyContent: "flex-start",
+                  p: 0,
+                  fontWeight: 800,
+                  textTransform: "none",
+                  fontSize: "0.9rem",
+                  transition: "gap 0.2s",
+                  "& .arrow": { transition: "transform 0.2s" },
                   "&:hover": {
-                    transform: "translateY(-10px)",
-                    boxShadow: "0 24px 48px rgba(79,70,229,0.14), 0 4px 16px rgba(79,70,229,0.04)",
-                    borderColor: "primary.main",
+                    bgcolor: "transparent",
+                    color: "primary.dark",
+                    "& .arrow": { transform: "translateX(4px)" },
                   },
                 }}
               >
-                <Box
-                  sx={{
-                    mb: 4,
-                    p: 2,
-                    display: "inline-flex",
-                    borderRadius: 4,
-                    color: "primary.main",
-                    alignSelf: "flex-start",
-                    background: "linear-gradient(135deg, rgba(79,70,229,0.12) 0%, rgba(79,70,229,0.02) 100%)",
-                    border: "1px solid",
-                    borderColor: "rgba(79,70,229,0.1)",
-                  }}
-                >
-                  <SchoolIcon sx={{ fontSize: 32 }} />
-                </Box>
-                <Typography variant="h5" sx={{ fontWeight: 900, mb: 3, color: "text.primary", letterSpacing: -0.5 }}>
-                  Student Portal
-                </Typography>
-                <Box sx={{ display: "flex", flexDirection: "column", gap: 2, flexGrow: 1, mb: 4 }}>
-                  {[
-                    "View Results",
-                    "Attendance Tracking",
-                    "Announcements",
-                    "Academic History"
-                  ].map((item, idx) => (
-                    <Box key={idx} sx={{ display: "flex", alignItems: "center", gap: 2 }}>
-                      <Box
-                        sx={{
-                          width: 20,
-                          height: 20,
-                          borderRadius: "50%",
-                          bgcolor: "rgba(79,70,229,0.08)",
-                          display: "flex",
-                          alignItems: "center",
-                          justifyContent: "center",
-                        }}
-                      >
-                        <CheckIcon sx={{ fontSize: 13, color: "primary.main", fontWeight: 900 }} />
-                      </Box>
-                      <Typography variant="body1" color="text.secondary" sx={{ fontWeight: 500, fontSize: "0.95rem" }}>
-                        {item}
-                      </Typography>
-                    </Box>
-                  ))}
-                </Box>
-                <Button
-                  component={Link}
-                  to="/login"
-                  variant="text"
-                  color="primary"
-                  sx={{
-                    justifyContent: "flex-start",
-                    p: 0,
-                    fontWeight: 800,
-                    textTransform: "none",
-                    fontSize: "0.95rem",
-                    transition: "gap 0.2s",
-                    "& .arrow": { transition: "transform 0.2s" },
-                    "&:hover": {
-                      bgcolor: "transparent",
-                      color: "primary.dark",
-                      "& .arrow": { transform: "translateX(4px)" },
-                    },
-                  }}
-                >
-                  Explore Portal <span className="arrow" style={{ marginLeft: "4px" }}>&rarr;</span>
-                </Button>
-              </Card>
-            </Grid>
-          </Grid>
+                Explore Portal <span className="arrow" style={{ marginLeft: "4px" }}>&rarr;</span>
+              </Button>
+            </Card>
+          </Box>
         </Container>
       </Box>
 
@@ -684,224 +726,167 @@ function Home() {
             </Typography>
           </Box>
 
-          <Box sx={{ position: "relative" }}>
-            {/* Desktop connecting dashed line */}
+          <Box
+            sx={{
+              position: "relative",
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "flex-start",
+              maxWidth: "900px",
+              mx: "auto",
+              pt: 3,
+              pb: 3,
+              flexDirection: { xs: "column", sm: "row" },
+              gap: { xs: 4, sm: 2 },
+            }}
+          >
+            {/* Desktop connecting progress line */}
             <Box
               sx={{
                 position: "absolute",
-                top: "135px",
-                left: "15%",
-                right: "15%",
-                height: 0,
-                borderTop: "2px dashed",
-                borderColor: "rgba(79,70,229,0.2)",
-                display: { xs: "none", md: "block" },
+                top: { xs: "auto", sm: "18px" },
+                left: { xs: "18px", sm: "15%" },
+                right: { xs: "auto", sm: "15%" },
+                bottom: { xs: "18px", sm: "auto" },
+                width: { xs: "2px", sm: "auto" },
+                height: { xs: "calc(100% - 36px)", sm: "2px" },
+                borderTop: { xs: "none", sm: "2px dashed rgba(79,70,229,0.25)" },
+                borderLeft: { xs: "2px dashed rgba(79,70,229,0.25)", sm: "none" },
                 zIndex: 1,
               }}
             />
 
-            <Grid container spacing={3} justifyContent="center" alignItems="stretch">
-              {/* Step 1: Admin */}
-              <Grid item xs={12} md={4} sx={{ zIndex: 2 }}>
-                <Box sx={{ display: "flex", flexDirection: "column", alignItems: "center", height: "100%" }}>
-                  {/* Circle Indicator */}
-                  <Box
-                    sx={{
-                      width: 54,
-                      height: 54,
-                      borderRadius: "50%",
-                      background: "linear-gradient(135deg, #4F46E5 0%, #818CF8 100%)",
-                      color: "white",
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      fontWeight: 900,
-                      fontSize: "1.15rem",
-                      boxShadow: "0 8px 20px rgba(79,70,229,0.3)",
-                      border: "4px solid",
-                      borderColor: "background.paper",
-                      mb: 3,
-                    }}
-                  >
-                    1
-                  </Box>
+            {/* Step 1: Admin */}
+            <Box
+              sx={{
+                display: "flex",
+                flexDirection: { xs: "row", sm: "column" },
+                alignItems: "center",
+                flex: 1,
+                zIndex: 2,
+                textAlign: { xs: "left", sm: "center" },
+                gap: { xs: 2.5, sm: 2 },
+                px: 2,
+              }}
+            >
+              {/* Circular Indicator */}
+              <Box
+                sx={{
+                  width: 36,
+                  height: 36,
+                  borderRadius: "50%",
+                  bgcolor: "primary.main",
+                  color: "white",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  fontWeight: 900,
+                  fontSize: "0.95rem",
+                  boxShadow: "0 4px 10px rgba(79,70,229,0.2)",
+                  border: "4px solid",
+                  borderColor: "background.paper",
+                }}
+              >
+                1
+              </Box>
 
-                  <Card
-                    elevation={0}
-                    sx={{
-                      p: 4,
-                      borderRadius: 5,
-                      border: "1px solid",
-                      borderColor: "divider",
-                      bgcolor: "background.default",
-                      textAlign: "center",
-                      width: "100%",
-                      height: "100%",
-                      transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
-                      "&:hover": {
-                        transform: "translateY(-6px)",
-                        boxShadow: "0 16px 32px rgba(0,0,0,0.04)",
-                        borderColor: "rgba(79,70,229,0.3)",
-                      },
-                    }}
-                  >
-                    <Box
-                      sx={{
-                        mx: "auto",
-                        mb: 2.5,
-                        p: 2,
-                        bgcolor: "rgba(79,70,229,0.06)",
-                        display: "inline-flex",
-                        borderRadius: "50%",
-                        color: "primary.main",
-                      }}
-                    >
-                      <AdminPanelSettingsIcon sx={{ fontSize: 32 }} />
-                    </Box>
-                    <Typography variant="h5" sx={{ fontWeight: 800, mb: 1.5, color: "text.primary" }}>
-                      Admin
-                    </Typography>
-                    <Typography variant="body1" color="text.secondary" sx={{ fontWeight: 500, lineHeight: 1.6, fontSize: "0.95rem" }}>
-                      Creates students, teachers, and subjects
-                    </Typography>
-                  </Card>
-                </Box>
-              </Grid>
+              <Box sx={{ display: "flex", flexDirection: "column", alignItems: { xs: "flex-start", sm: "center" } }}>
+                <Typography variant="h6" sx={{ fontWeight: 800, mb: 0.5, color: "text.primary" }}>
+                  Admin
+                </Typography>
+                <Typography variant="body2" color="text.secondary" sx={{ fontWeight: 500, lineHeight: 1.4, fontSize: "0.85rem", maxWidth: 220 }}>
+                  Creates students, teachers, and subjects
+                </Typography>
+              </Box>
+            </Box>
 
-              {/* Step 2: Teacher */}
-              <Grid item xs={12} md={4} sx={{ zIndex: 2 }}>
-                <Box sx={{ display: "flex", flexDirection: "column", alignItems: "center", height: "100%" }}>
-                  {/* Circle Indicator */}
-                  <Box
-                    sx={{
-                      width: 54,
-                      height: 54,
-                      borderRadius: "50%",
-                      background: "linear-gradient(135deg, #4F46E5 0%, #818CF8 100%)",
-                      color: "white",
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      fontWeight: 900,
-                      fontSize: "1.15rem",
-                      boxShadow: "0 8px 20px rgba(79,70,229,0.3)",
-                      border: "4px solid",
-                      borderColor: "background.paper",
-                      mb: 3,
-                    }}
-                  >
-                    2
-                  </Box>
+            {/* Step 2: Teacher */}
+            <Box
+              sx={{
+                display: "flex",
+                flexDirection: { xs: "row", sm: "column" },
+                alignItems: "center",
+                flex: 1,
+                zIndex: 2,
+                textAlign: { xs: "left", sm: "center" },
+                gap: { xs: 2.5, sm: 2 },
+                px: 2,
+              }}
+            >
+              {/* Circular Indicator */}
+              <Box
+                sx={{
+                  width: 36,
+                  height: 36,
+                  borderRadius: "50%",
+                  bgcolor: "primary.main",
+                  color: "white",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  fontWeight: 900,
+                  fontSize: "0.95rem",
+                  boxShadow: "0 4px 10px rgba(79,70,229,0.2)",
+                  border: "4px solid",
+                  borderColor: "background.paper",
+                }}
+              >
+                2
+              </Box>
 
-                  <Card
-                    elevation={0}
-                    sx={{
-                      p: 4,
-                      borderRadius: 5,
-                      border: "1px solid",
-                      borderColor: "divider",
-                      bgcolor: "background.default",
-                      textAlign: "center",
-                      width: "100%",
-                      height: "100%",
-                      transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
-                      "&:hover": {
-                        transform: "translateY(-6px)",
-                        boxShadow: "0 16px 32px rgba(0,0,0,0.04)",
-                        borderColor: "rgba(79,70,229,0.3)",
-                      },
-                    }}
-                  >
-                    <Box
-                      sx={{
-                        mx: "auto",
-                        mb: 2.5,
-                        p: 2,
-                        bgcolor: "rgba(79,70,229,0.06)",
-                        display: "inline-flex",
-                        borderRadius: "50%",
-                        color: "primary.main",
-                      }}
-                    >
-                      <AssignmentIcon sx={{ fontSize: 32 }} />
-                    </Box>
-                    <Typography variant="h5" sx={{ fontWeight: 800, mb: 1.5, color: "text.primary" }}>
-                      Teacher
-                    </Typography>
-                    <Typography variant="body1" color="text.secondary" sx={{ fontWeight: 500, lineHeight: 1.6, fontSize: "0.95rem" }}>
-                      Records attendance and publishes results
-                    </Typography>
-                  </Card>
-                </Box>
-              </Grid>
+              <Box sx={{ display: "flex", flexDirection: "column", alignItems: { xs: "flex-start", sm: "center" } }}>
+                <Typography variant="h6" sx={{ fontWeight: 800, mb: 0.5, color: "text.primary" }}>
+                  Teacher
+                </Typography>
+                <Typography variant="body2" color="text.secondary" sx={{ fontWeight: 500, lineHeight: 1.4, fontSize: "0.85rem", maxWidth: 220 }}>
+                  Records attendance and publishes results
+                </Typography>
+              </Box>
+            </Box>
 
-              {/* Step 3: Student */}
-              <Grid item xs={12} md={4} sx={{ zIndex: 2 }}>
-                <Box sx={{ display: "flex", flexDirection: "column", alignItems: "center", height: "100%" }}>
-                  {/* Circle Indicator */}
-                  <Box
-                    sx={{
-                      width: 54,
-                      height: 54,
-                      borderRadius: "50%",
-                      background: "linear-gradient(135deg, #4F46E5 0%, #818CF8 100%)",
-                      color: "white",
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      fontWeight: 900,
-                      fontSize: "1.15rem",
-                      boxShadow: "0 8px 20px rgba(79,70,229,0.3)",
-                      border: "4px solid",
-                      borderColor: "background.paper",
-                      mb: 3,
-                    }}
-                  >
-                    3
-                  </Box>
+            {/* Step 3: Student */}
+            <Box
+              sx={{
+                display: "flex",
+                flexDirection: { xs: "row", sm: "column" },
+                alignItems: "center",
+                flex: 1,
+                zIndex: 2,
+                textAlign: { xs: "left", sm: "center" },
+                gap: { xs: 2.5, sm: 2 },
+                px: 2,
+              }}
+            >
+              {/* Circular Indicator */}
+              <Box
+                sx={{
+                  width: 36,
+                  height: 36,
+                  borderRadius: "50%",
+                  bgcolor: "primary.main",
+                  color: "white",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  fontWeight: 900,
+                  fontSize: "0.95rem",
+                  boxShadow: "0 4px 10px rgba(79,70,229,0.2)",
+                  border: "4px solid",
+                  borderColor: "background.paper",
+                }}
+              >
+                3
+              </Box>
 
-                  <Card
-                    elevation={0}
-                    sx={{
-                      p: 4,
-                      borderRadius: 5,
-                      border: "1px solid",
-                      borderColor: "divider",
-                      bgcolor: "background.default",
-                      textAlign: "center",
-                      width: "100%",
-                      height: "100%",
-                      transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
-                      "&:hover": {
-                        transform: "translateY(-6px)",
-                        boxShadow: "0 16px 32px rgba(0,0,0,0.04)",
-                        borderColor: "rgba(79,70,229,0.3)",
-                      },
-                    }}
-                  >
-                    <Box
-                      sx={{
-                        mx: "auto",
-                        mb: 2.5,
-                        p: 2,
-                        bgcolor: "rgba(79,70,229,0.06)",
-                        display: "inline-flex",
-                        borderRadius: "50%",
-                        color: "primary.main",
-                      }}
-                    >
-                      <SchoolIcon sx={{ fontSize: 32 }} />
-                    </Box>
-                    <Typography variant="h5" sx={{ fontWeight: 800, mb: 1.5, color: "text.primary" }}>
-                      Student
-                    </Typography>
-                    <Typography variant="body1" color="text.secondary" sx={{ fontWeight: 500, lineHeight: 1.6, fontSize: "0.95rem" }}>
-                      Views results, attendance, and announcements
-                    </Typography>
-                  </Card>
-                </Box>
-              </Grid>
-            </Grid>
+              <Box sx={{ display: "flex", flexDirection: "column", alignItems: { xs: "flex-start", sm: "center" } }}>
+                <Typography variant="h6" sx={{ fontWeight: 800, mb: 0.5, color: "text.primary" }}>
+                  Student
+                </Typography>
+                <Typography variant="body2" color="text.secondary" sx={{ fontWeight: 500, lineHeight: 1.4, fontSize: "0.85rem", maxWidth: 220 }}>
+                  Views results, attendance, and announcements
+                </Typography>
+              </Box>
+            </Box>
           </Box>
         </Container>
       </Box>
@@ -944,38 +929,43 @@ function Home() {
               <Card
                 elevation={0}
                 sx={{
-                  p: 4,
-                  height: "100%",
-                  borderRadius: 5,
+                  p: 2.5,
+                  height: 180,
+                  borderRadius: "20px",
                   bgcolor: "background.paper",
-                  border: "1px solid",
-                  borderColor: "divider",
-                  boxShadow: "0 8px 24px rgba(79,70,229,0.03)",
+                  border: "1px solid rgba(79, 70, 229, 0.08)",
+                  boxShadow: "0 4px 20px rgba(0, 0, 0, 0.02)",
                   transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
+                  display: "flex",
+                  flexDirection: "column",
+                  justifyContent: "center",
                   "&:hover": {
                     transform: "translateY(-6px)",
-                    boxShadow: "0 20px 40px rgba(79,70,229,0.12)",
+                    boxShadow: "0 12px 24px rgba(79, 70, 229, 0.08)",
                     borderColor: "primary.main",
                   },
                 }}
               >
                 <Box
                   sx={{
-                    mb: 3,
-                    p: 2,
-                    bgcolor: "rgba(79,70,229,0.06)",
-                    display: "inline-flex",
+                    mb: 1.5,
+                    width: 42,
+                    height: 42,
                     borderRadius: "50%",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
                     color: "primary.main",
                     background: "linear-gradient(135deg, rgba(79,70,229,0.12) 0%, rgba(79,70,229,0.02) 100%)",
+                    border: "1px solid rgba(79, 70, 229, 0.1)",
                   }}
                 >
-                  <LockIcon sx={{ fontSize: 32 }} />
+                  <LockIcon sx={{ fontSize: 20 }} />
                 </Box>
-                <Typography variant="h6" sx={{ fontWeight: 800, mb: 1.5, color: "text.primary" }}>
+                <Typography variant="subtitle1" sx={{ fontWeight: 800, mb: 0.5, color: "text.primary" }}>
                   Secure Authentication
                 </Typography>
-                <Typography variant="body2" color="text.secondary" sx={{ fontWeight: 500, lineHeight: 1.6 }}>
+                <Typography variant="body2" color="text.secondary" sx={{ fontWeight: 500, lineHeight: 1.4, fontSize: "0.85rem" }}>
                   JWT-based secure login and session verification.
                 </Typography>
               </Card>
@@ -986,80 +976,90 @@ function Home() {
               <Card
                 elevation={0}
                 sx={{
-                  p: 4,
-                  height: "100%",
-                  borderRadius: 5,
+                  p: 2.5,
+                  height: 180,
+                  borderRadius: "20px",
                   bgcolor: "background.paper",
-                  border: "1px solid",
-                  borderColor: "divider",
-                  boxShadow: "0 8px 24px rgba(79,70,229,0.03)",
+                  border: "1px solid rgba(79, 70, 229, 0.08)",
+                  boxShadow: "0 4px 20px rgba(0, 0, 0, 0.02)",
                   transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
+                  display: "flex",
+                  flexDirection: "column",
+                  justifyContent: "center",
                   "&:hover": {
                     transform: "translateY(-6px)",
-                    boxShadow: "0 20px 40px rgba(79,70,229,0.12)",
+                    boxShadow: "0 12px 24px rgba(79, 70, 229, 0.08)",
                     borderColor: "primary.main",
                   },
                 }}
               >
                 <Box
                   sx={{
-                    mb: 3,
-                    p: 2,
-                    bgcolor: "rgba(79,70,229,0.06)",
-                    display: "inline-flex",
+                    mb: 1.5,
+                    width: 42,
+                    height: 42,
                     borderRadius: "50%",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
                     color: "primary.main",
                     background: "linear-gradient(135deg, rgba(79,70,229,0.12) 0%, rgba(79,70,229,0.02) 100%)",
+                    border: "1px solid rgba(79, 70, 229, 0.1)",
                   }}
                 >
-                  <SpeedIcon sx={{ fontSize: 32 }} />
+                  <SpeedIcon sx={{ fontSize: 20 }} />
                 </Box>
-                <Typography variant="h6" sx={{ fontWeight: 800, mb: 1.5, color: "text.primary" }}>
+                <Typography variant="subtitle1" sx={{ fontWeight: 800, mb: 0.5, color: "text.primary" }}>
                   Fast Performance
                 </Typography>
-                <Typography variant="body2" color="text.secondary" sx={{ fontWeight: 500, lineHeight: 1.6 }}>
+                <Typography variant="body2" color="text.secondary" sx={{ fontWeight: 500, lineHeight: 1.4, fontSize: "0.85rem" }}>
                   Optimized PostgreSQL queries through Supabase endpoints.
                 </Typography>
               </Card>
             </Grid>
 
-            {/* Highlight 3: Analytics & Reports */}
+            {/* Highlight 3: Analytics */}
             <Grid item xs={12} sm={6} md={3}>
               <Card
                 elevation={0}
                 sx={{
-                  p: 4,
-                  height: "100%",
-                  borderRadius: 5,
+                  p: 2.5,
+                  height: 180,
+                  borderRadius: "20px",
                   bgcolor: "background.paper",
-                  border: "1px solid",
-                  borderColor: "divider",
-                  boxShadow: "0 8px 24px rgba(79,70,229,0.03)",
+                  border: "1px solid rgba(79, 70, 229, 0.08)",
+                  boxShadow: "0 4px 20px rgba(0, 0, 0, 0.02)",
                   transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
+                  display: "flex",
+                  flexDirection: "column",
+                  justifyContent: "center",
                   "&:hover": {
                     transform: "translateY(-6px)",
-                    boxShadow: "0 20px 40px rgba(79,70,229,0.12)",
+                    boxShadow: "0 12px 24px rgba(79, 70, 229, 0.08)",
                     borderColor: "primary.main",
                   },
                 }}
               >
                 <Box
                   sx={{
-                    mb: 3,
-                    p: 2,
-                    bgcolor: "rgba(79,70,229,0.06)",
-                    display: "inline-flex",
+                    mb: 1.5,
+                    width: 42,
+                    height: 42,
                     borderRadius: "50%",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
                     color: "primary.main",
                     background: "linear-gradient(135deg, rgba(79,70,229,0.12) 0%, rgba(79,70,229,0.02) 100%)",
+                    border: "1px solid rgba(79, 70, 229, 0.1)",
                   }}
                 >
-                  <BarChartIcon sx={{ fontSize: 32 }} />
+                  <BarChartIcon sx={{ fontSize: 20 }} />
                 </Box>
-                <Typography variant="h6" sx={{ fontWeight: 800, mb: 1.5, color: "text.primary" }}>
-                  Analytics & Reports
+                <Typography variant="subtitle1" sx={{ fontWeight: 800, mb: 0.5, color: "text.primary" }}>
+                  Analytics
                 </Typography>
-                <Typography variant="body2" color="text.secondary" sx={{ fontWeight: 500, lineHeight: 1.6 }}>
+                <Typography variant="body2" color="text.secondary" sx={{ fontWeight: 500, lineHeight: 1.4, fontSize: "0.85rem" }}>
                   Centralized academic dashboards and visual report lists.
                 </Typography>
               </Card>
@@ -1070,38 +1070,43 @@ function Home() {
               <Card
                 elevation={0}
                 sx={{
-                  p: 4,
-                  height: "100%",
-                  borderRadius: 5,
+                  p: 2.5,
+                  height: 180,
+                  borderRadius: "20px",
                   bgcolor: "background.paper",
-                  border: "1px solid",
-                  borderColor: "divider",
-                  boxShadow: "0 8px 24px rgba(79,70,229,0.03)",
+                  border: "1px solid rgba(79, 70, 229, 0.08)",
+                  boxShadow: "0 4px 20px rgba(0, 0, 0, 0.02)",
                   transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
+                  display: "flex",
+                  flexDirection: "column",
+                  justifyContent: "center",
                   "&:hover": {
                     transform: "translateY(-6px)",
-                    boxShadow: "0 20px 40px rgba(79,70,229,0.12)",
+                    boxShadow: "0 12px 24px rgba(79, 70, 229, 0.08)",
                     borderColor: "primary.main",
                   },
                 }}
               >
                 <Box
                   sx={{
-                    mb: 3,
-                    p: 2,
-                    bgcolor: "rgba(79,70,229,0.06)",
-                    display: "inline-flex",
+                    mb: 1.5,
+                    width: 42,
+                    height: 42,
                     borderRadius: "50%",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
                     color: "primary.main",
                     background: "linear-gradient(135deg, rgba(79,70,229,0.12) 0%, rgba(79,70,229,0.02) 100%)",
+                    border: "1px solid rgba(79, 70, 229, 0.1)",
                   }}
                 >
-                  <DevicesIcon sx={{ fontSize: 32 }} />
+                  <DevicesIcon sx={{ fontSize: 20 }} />
                 </Box>
-                <Typography variant="h6" sx={{ fontWeight: 800, mb: 1.5, color: "text.primary" }}>
+                <Typography variant="subtitle1" sx={{ fontWeight: 800, mb: 0.5, color: "text.primary" }}>
                   Responsive Design
                 </Typography>
-                <Typography variant="body2" color="text.secondary" sx={{ fontWeight: 500, lineHeight: 1.6 }}>
+                <Typography variant="body2" color="text.secondary" sx={{ fontWeight: 500, lineHeight: 1.4, fontSize: "0.85rem" }}>
                   Optimized interfaces displaying flawlessly on phone and desktop.
                 </Typography>
               </Card>
@@ -1588,72 +1593,76 @@ function Home() {
               {
                 title: "Attendance Management",
                 desc: "Real-time records of attendance logs and reports.",
-                icon: <CalendarTodayIcon sx={{ fontSize: 28 }} />,
+                icon: <CalendarTodayIcon sx={{ fontSize: 22 }} />,
               },
               {
                 title: "Result Management",
                 desc: "Calculate grades, pass thresholds, and academic statistics.",
-                icon: <AssignmentTurnedInIcon sx={{ fontSize: 28 }} />,
+                icon: <AssignmentTurnedInIcon sx={{ fontSize: 22 }} />,
               },
               {
                 title: "Student Records",
                 desc: "Comprehensive profiles containing historical and academic records.",
-                icon: <BadgeIcon sx={{ fontSize: 28 }} />,
+                icon: <BadgeIcon sx={{ fontSize: 22 }} />,
               },
               {
                 title: "Teacher Management",
                 desc: "Coordinate courses, schedules, and class assignments dynamically.",
-                icon: <SupervisorAccountIcon sx={{ fontSize: 28 }} />,
+                icon: <SupervisorAccountIcon sx={{ fontSize: 22 }} />,
               },
               {
                 title: "Audit Logs",
                 desc: "Complete operational tracking for secure, authenticated revisions.",
-                icon: <HistoryIcon sx={{ fontSize: 28 }} />,
+                icon: <HistoryIcon sx={{ fontSize: 22 }} />,
               },
               {
                 title: "Announcements",
                 desc: "Broadcast important guidelines, timetables, and notification files.",
-                icon: <CampaignIcon sx={{ fontSize: 28 }} />,
+                icon: <CampaignIcon sx={{ fontSize: 22 }} />,
               },
             ].map((item, idx) => (
-              <Grid item xs={12} sm={6} md={6} key={idx}>
+              <Grid item xs={12} sm={6} md={4} key={idx}>
                 <Card
                   elevation={0}
                   sx={{
-                    p: 4,
-                    height: "100%",
-                    borderRadius: 5,
+                    p: 3,
+                    height: 200,
+                    borderRadius: "20px",
                     bgcolor: "background.paper",
-                    border: "1px solid",
-                    borderColor: "divider",
-                    boxShadow: "0 8px 24px rgba(0,0,0,0.02)",
+                    border: "1px solid rgba(79, 70, 229, 0.08)",
+                    boxShadow: "0 4px 20px rgba(0, 0, 0, 0.02)",
                     transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
+                    display: "flex",
+                    flexDirection: "column",
+                    justifyContent: "center",
                     "&:hover": {
                       transform: "translateY(-6px)",
-                      boxShadow: "0 20px 40px rgba(79,70,229,0.08)",
+                      boxShadow: "0 12px 24px rgba(79, 70, 229, 0.08)",
                       borderColor: "primary.main",
                     },
                   }}
                 >
                   <Box
                     sx={{
-                      mb: 2.5,
-                      p: 1.75,
-                      bgcolor: "rgba(79,70,229,0.06)",
-                      display: "inline-flex",
-                      borderRadius: 4,
+                      mb: 1.5,
+                      width: 44,
+                      height: 44,
+                      borderRadius: "50%",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
                       color: "primary.main",
                       background: "linear-gradient(135deg, rgba(79,70,229,0.1) 0%, rgba(79,70,229,0.02) 100%)",
-                      border: "1px solid",
-                      borderColor: "rgba(79,70,229,0.05)",
+                      border: "1px solid rgba(79, 70, 229, 0.08)",
+                      alignSelf: "flex-start",
                     }}
                   >
                     {item.icon}
                   </Box>
-                  <Typography variant="h6" sx={{ fontWeight: 800, mb: 1.5, color: "text.primary", letterSpacing: -0.3 }}>
+                  <Typography variant="subtitle1" sx={{ fontWeight: 800, mb: 0.5, color: "text.primary", letterSpacing: -0.3 }}>
                     {item.title}
                   </Typography>
-                  <Typography variant="body2" color="text.secondary" sx={{ fontWeight: 500, lineHeight: 1.6, fontSize: "0.9rem" }}>
+                  <Typography variant="body2" color="text.secondary" sx={{ fontWeight: 500, lineHeight: 1.4, fontSize: "0.85rem" }}>
                     {item.desc}
                   </Typography>
                 </Card>
