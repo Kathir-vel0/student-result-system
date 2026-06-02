@@ -932,215 +932,108 @@ function Home() {
             </Typography>
           </Box>
 
-          <Grid container spacing={4}>
-            {/* Highlight 1: Secure Authentication */}
-            <Grid item xs={12} sm={6} md={3}>
+          <Box
+            sx={{
+              display: "flex",
+              flexDirection: "row",
+              flexWrap: "wrap",
+              justifyContent: "center",
+              gap: 3,
+            }}
+          >
+            {[
+              {
+                title: "Secure Authentication",
+                desc: "JWT-based secure login and session verification.",
+                icon: <LockIcon className="highlight-icon" sx={{ fontSize: 18, transition: "transform 0.3s ease" }} />,
+                badge: "✓ Enterprise Ready",
+              },
+              {
+                title: "Fast Performance",
+                desc: "Optimized PostgreSQL queries through Supabase endpoints.",
+                icon: <SpeedIcon className="highlight-icon" sx={{ fontSize: 18, transition: "transform 0.3s ease" }} />,
+                badge: "✓ Optimized",
+              },
+              {
+                title: "Analytics & Reports",
+                desc: "Centralized academic dashboards and visual report lists.",
+                icon: <BarChartIcon className="highlight-icon" sx={{ fontSize: 18, transition: "transform 0.3s ease" }} />,
+                badge: "✓ Real-Time",
+              },
+              {
+                title: "Responsive Design",
+                desc: "Optimized interfaces displaying flawlessly on phone and desktop.",
+                icon: <DevicesIcon className="highlight-icon" sx={{ fontSize: 18, transition: "transform 0.3s ease" }} />,
+                badge: "✓ Cross Platform",
+              },
+            ].map((item, idx) => (
               <Card
+                key={idx}
                 elevation={0}
                 sx={{
-                  p: 3,
-                  height: 220,
-                  borderRadius: "24px",
-                  bgcolor: "#ffffff",
+                  p: 2.5,
+                  width: 280,
+                  height: 180,
+                  borderRadius: "20px",
+                  bgcolor: "rgba(255, 255, 255, 0.9)",
                   border: "1px solid rgba(79, 70, 229, 0.08)",
-                  boxShadow: "0 8px 30px rgba(0, 0, 0, 0.04)",
-                  transition: "all 0.4s cubic-bezier(0.4, 0, 0.2, 1)",
+                  boxShadow: "0 8px 30px rgba(79, 70, 229, 0.08)",
+                  transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
                   display: "flex",
                   flexDirection: "column",
                   justifyContent: "center",
                   "&:hover": {
                     transform: "translateY(-8px)",
-                    boxShadow: "0 20px 45px rgba(79, 70, 229, 0.14)",
-                    borderColor: "primary.main",
+                    boxShadow: "0 20px 50px rgba(79, 70, 229, 0.18)",
                   },
                   "&:hover .highlight-icon": {
-                    transform: "scale(1.15)",
+                    transform: "scale(1.1)",
                   },
                 }}
               >
-                <Box
-                  sx={{
-                    mb: 2,
-                    width: 56,
-                    height: 56,
-                    borderRadius: "50%",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    color: "primary.main",
-                    background: "linear-gradient(135deg, rgba(79,70,229,0.15) 0%, rgba(79,70,229,0.03) 100%)",
-                    border: "1px solid rgba(79, 70, 229, 0.12)",
-                    animation: `${glowPulse} 3s infinite ease-in-out`,
-                    alignSelf: "flex-start",
-                  }}
-                >
-                  <LockIcon className="highlight-icon" sx={{ fontSize: 24, transition: "transform 0.3s ease" }} />
+                {/* Top Row: Icon + Badge */}
+                <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 2 }}>
+                  <Box
+                    sx={{
+                      width: 38,
+                      height: 38,
+                      borderRadius: "50%",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      color: "primary.main",
+                      background: "linear-gradient(135deg, rgba(79,70,229,0.15) 0%, rgba(79,70,229,0.03) 100%)",
+                      border: "1px solid rgba(79, 70, 229, 0.12)",
+                    }}
+                  >
+                    {item.icon}
+                  </Box>
+                  <Box
+                    sx={{
+                      px: 1.25,
+                      py: 0.5,
+                      borderRadius: "20px",
+                      fontSize: "0.65rem",
+                      fontWeight: 800,
+                      bgcolor: "rgba(79,70,229,0.08)",
+                      color: "primary.main",
+                      display: "flex",
+                      alignItems: "center",
+                    }}
+                  >
+                    {item.badge}
+                  </Box>
                 </Box>
-                <Typography variant="subtitle1" sx={{ fontWeight: 800, mb: 0.75, color: "text.primary" }}>
-                  Secure Authentication
-                </Typography>
-                <Typography variant="body2" color="text.secondary" sx={{ fontWeight: 500, lineHeight: 1.5, fontSize: "0.85rem" }}>
-                  JWT-based secure login and session verification.
-                </Typography>
-              </Card>
-            </Grid>
 
-            {/* Highlight 2: Fast Performance */}
-            <Grid item xs={12} sm={6} md={3}>
-              <Card
-                elevation={0}
-                sx={{
-                  p: 3,
-                  height: 220,
-                  borderRadius: "24px",
-                  bgcolor: "#ffffff",
-                  border: "1px solid rgba(79, 70, 229, 0.08)",
-                  boxShadow: "0 8px 30px rgba(0, 0, 0, 0.04)",
-                  transition: "all 0.4s cubic-bezier(0.4, 0, 0.2, 1)",
-                  display: "flex",
-                  flexDirection: "column",
-                  justifyContent: "center",
-                  "&:hover": {
-                    transform: "translateY(-8px)",
-                    boxShadow: "0 20px 45px rgba(79, 70, 229, 0.14)",
-                    borderColor: "primary.main",
-                  },
-                  "&:hover .highlight-icon": {
-                    transform: "scale(1.15)",
-                  },
-                }}
-              >
-                <Box
-                  sx={{
-                    mb: 2,
-                    width: 56,
-                    height: 56,
-                    borderRadius: "50%",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    color: "primary.main",
-                    background: "linear-gradient(135deg, rgba(79,70,229,0.15) 0%, rgba(79,70,229,0.03) 100%)",
-                    border: "1px solid rgba(79, 70, 229, 0.12)",
-                    animation: `${glowPulse} 3s infinite ease-in-out`,
-                    alignSelf: "flex-start",
-                  }}
-                >
-                  <SpeedIcon className="highlight-icon" sx={{ fontSize: 24, transition: "transform 0.3s ease" }} />
-                </Box>
-                <Typography variant="subtitle1" sx={{ fontWeight: 800, mb: 0.75, color: "text.primary" }}>
-                  Fast Performance
+                <Typography variant="subtitle2" sx={{ fontWeight: 800, mb: 0.5, color: "text.primary", fontSize: "0.95rem" }}>
+                  {item.title}
                 </Typography>
-                <Typography variant="body2" color="text.secondary" sx={{ fontWeight: 500, lineHeight: 1.5, fontSize: "0.85rem" }}>
-                  Optimized PostgreSQL queries through Supabase endpoints.
+                <Typography variant="body2" color="text.secondary" sx={{ fontWeight: 500, lineHeight: 1.4, fontSize: "0.75rem" }}>
+                  {item.desc}
                 </Typography>
               </Card>
-            </Grid>
-
-            {/* Highlight 3: Analytics & Reports */}
-            <Grid item xs={12} sm={6} md={3}>
-              <Card
-                elevation={0}
-                sx={{
-                  p: 3,
-                  height: 220,
-                  borderRadius: "24px",
-                  bgcolor: "#ffffff",
-                  border: "1px solid rgba(79, 70, 229, 0.08)",
-                  boxShadow: "0 8px 30px rgba(0, 0, 0, 0.04)",
-                  transition: "all 0.4s cubic-bezier(0.4, 0, 0.2, 1)",
-                  display: "flex",
-                  flexDirection: "column",
-                  justifyContent: "center",
-                  "&:hover": {
-                    transform: "translateY(-8px)",
-                    boxShadow: "0 20px 45px rgba(79, 70, 229, 0.14)",
-                    borderColor: "primary.main",
-                  },
-                  "&:hover .highlight-icon": {
-                    transform: "scale(1.15)",
-                  },
-                }}
-              >
-                <Box
-                  sx={{
-                    mb: 2,
-                    width: 56,
-                    height: 56,
-                    borderRadius: "50%",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    color: "primary.main",
-                    background: "linear-gradient(135deg, rgba(79,70,229,0.15) 0%, rgba(79,70,229,0.03) 100%)",
-                    border: "1px solid rgba(79, 70, 229, 0.12)",
-                    animation: `${glowPulse} 3s infinite ease-in-out`,
-                    alignSelf: "flex-start",
-                  }}
-                >
-                  <BarChartIcon className="highlight-icon" sx={{ fontSize: 24, transition: "transform 0.3s ease" }} />
-                </Box>
-                <Typography variant="subtitle1" sx={{ fontWeight: 800, mb: 0.75, color: "text.primary" }}>
-                  Analytics & Reports
-                </Typography>
-                <Typography variant="body2" color="text.secondary" sx={{ fontWeight: 500, lineHeight: 1.5, fontSize: "0.85rem" }}>
-                  Centralized academic dashboards and visual report lists.
-                </Typography>
-              </Card>
-            </Grid>
-
-            {/* Highlight 4: Responsive Design */}
-            <Grid item xs={12} sm={6} md={3}>
-              <Card
-                elevation={0}
-                sx={{
-                  p: 3,
-                  height: 220,
-                  borderRadius: "24px",
-                  bgcolor: "#ffffff",
-                  border: "1px solid rgba(79, 70, 229, 0.08)",
-                  boxShadow: "0 8px 30px rgba(0, 0, 0, 0.04)",
-                  transition: "all 0.4s cubic-bezier(0.4, 0, 0.2, 1)",
-                  display: "flex",
-                  flexDirection: "column",
-                  justifyContent: "center",
-                  "&:hover": {
-                    transform: "translateY(-8px)",
-                    boxShadow: "0 20px 45px rgba(79, 70, 229, 0.14)",
-                    borderColor: "primary.main",
-                  },
-                  "&:hover .highlight-icon": {
-                    transform: "scale(1.15)",
-                  },
-                }}
-              >
-                <Box
-                  sx={{
-                    mb: 2,
-                    width: 56,
-                    height: 56,
-                    borderRadius: "50%",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    color: "primary.main",
-                    background: "linear-gradient(135deg, rgba(79,70,229,0.15) 0%, rgba(79,70,229,0.03) 100%)",
-                    border: "1px solid rgba(79, 70, 229, 0.12)",
-                    animation: `${glowPulse} 3s infinite ease-in-out`,
-                    alignSelf: "flex-start",
-                  }}
-                >
-                  <DevicesIcon className="highlight-icon" sx={{ fontSize: 24, transition: "transform 0.3s ease" }} />
-                </Box>
-                <Typography variant="subtitle1" sx={{ fontWeight: 800, mb: 0.75, color: "text.primary" }}>
-                  Responsive Design
-                </Typography>
-                <Typography variant="body2" color="text.secondary" sx={{ fontWeight: 500, lineHeight: 1.5, fontSize: "0.85rem" }}>
-                  Optimized interfaces displaying flawlessly on phone and desktop.
-                </Typography>
-              </Card>
-            </Grid>
-          </Grid>
+            ))}
+          </Box>
         </Container>
       </Box>
 
@@ -1544,69 +1437,77 @@ function Home() {
             {[
               {
                 title: "Attendance Management",
-                desc: "Real-time records of attendance logs and reports.",
-                icon: <CalendarTodayIcon sx={{ fontSize: 20 }} />,
+                desc: "Real-time attendance tracking",
+                stat: "99% Accuracy",
+                icon: <CalendarTodayIcon className="choose-icon" sx={{ fontSize: 24, transition: "transform 0.3s ease" }} />,
               },
               {
                 title: "Result Management",
-                desc: "Calculate grades, pass thresholds, and academic statistics.",
-                icon: <AssignmentTurnedInIcon sx={{ fontSize: 20 }} />,
+                desc: "Automated grade calculations",
+                stat: "1000+ Results Processed",
+                icon: <AssignmentTurnedInIcon className="choose-icon" sx={{ fontSize: 24, transition: "transform 0.3s ease" }} />,
               },
               {
                 title: "Student Records",
-                desc: "Comprehensive profiles containing historical and academic records.",
-                icon: <BadgeIcon sx={{ fontSize: 20 }} />,
+                desc: "Centralized student profiles",
+                stat: "1250+ Students",
+                icon: <BadgeIcon className="choose-icon" sx={{ fontSize: 24, transition: "transform 0.3s ease" }} />,
               },
               {
                 title: "Teacher Management",
-                desc: "Coordinate courses, schedules, and class assignments dynamically.",
-                icon: <SupervisorAccountIcon sx={{ fontSize: 20 }} />,
+                desc: "Faculty administration tools",
+                stat: "50+ Teachers",
+                icon: <SupervisorAccountIcon className="choose-icon" sx={{ fontSize: 24, transition: "transform 0.3s ease" }} />,
               },
               {
                 title: "Audit Logs",
-                desc: "Complete operational tracking for secure, authenticated revisions.",
-                icon: <HistoryIcon sx={{ fontSize: 20 }} />,
+                desc: "Complete activity history",
+                stat: "100% Traceability",
+                icon: <HistoryIcon className="choose-icon" sx={{ fontSize: 24, transition: "transform 0.3s ease" }} />,
               },
               {
                 title: "Announcements",
-                desc: "Broadcast important guidelines, timetables, and notification files.",
-                icon: <CampaignIcon sx={{ fontSize: 20 }} />,
+                desc: "Instant communication",
+                stat: "Real-Time Delivery",
+                icon: <CampaignIcon className="choose-icon" sx={{ fontSize: 24, transition: "transform 0.3s ease" }} />,
               },
             ].map((item, idx) => (
               <Grid item xs={12} sm={6} md={4} key={idx}>
                 <Card
                   elevation={0}
                   sx={{
-                    p: 2.5,
-                    height: 180,
-                    borderRadius: "24px",
-                    bgcolor: "#ffffff",
-                    border: "1px solid rgba(79, 70, 229, 0.08)",
-                    boxShadow: "0 4px 20px rgba(0, 0, 0, 0.02)",
+                    p: 3,
+                    height: 220,
+                    borderRadius: "20px",
+                    background: "linear-gradient(#ffffff, #ffffff) padding-box, linear-gradient(135deg, rgba(79, 70, 229, 0.15) 0%, rgba(79, 70, 229, 0.03) 100%) border-box",
+                    border: "1px solid transparent",
+                    boxShadow: "0 8px 30px rgba(0, 0, 0, 0.02)",
                     transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
                     display: "flex",
                     flexDirection: "column",
-                    justifyContent: "center",
                     "&:hover": {
-                      transform: "translateY(-6px)",
-                      boxShadow: "0 12px 30px rgba(79, 70, 229, 0.15)",
-                      borderColor: "primary.main",
+                      transform: "translateY(-10px)",
+                      boxShadow: "0 20px 50px rgba(79, 70, 229, 0.18)",
+                      animation: `${borderGlow} 2s infinite ease-in-out`,
+                      background: "linear-gradient(#ffffff, #ffffff) padding-box, linear-gradient(135deg, rgba(79, 70, 229, 0.4) 0%, rgba(79, 70, 229, 0.1) 100%) border-box",
+                    },
+                    "&:hover .choose-icon": {
+                      transform: "scale(1.1)",
                     },
                   }}
                 >
                   <Box
                     sx={{
-                      mb: 1.5,
-                      width: 42,
-                      height: 42,
+                      mb: 2,
+                      width: 48,
+                      height: 48,
                       borderRadius: "50%",
                       display: "flex",
                       alignItems: "center",
                       justifyContent: "center",
                       color: "primary.main",
-                      background: "linear-gradient(135deg, rgba(79,70,229,0.1) 0%, rgba(79,70,229,0.02) 100%)",
-                      border: "1px solid rgba(79, 70, 229, 0.08)",
-                      alignSelf: "flex-start",
+                      background: "linear-gradient(135deg, rgba(79,70,229,0.15) 0%, rgba(79,70,229,0.03) 100%)",
+                      border: "1px solid rgba(79, 70, 229, 0.12)",
                     }}
                   >
                     {item.icon}
@@ -1614,8 +1515,11 @@ function Home() {
                   <Typography variant="subtitle1" sx={{ fontWeight: 800, mb: 0.5, color: "text.primary", letterSpacing: -0.3 }}>
                     {item.title}
                   </Typography>
-                  <Typography variant="body2" color="text.secondary" sx={{ fontWeight: 500, lineHeight: 1.4, fontSize: "0.85rem" }}>
+                  <Typography variant="body2" color="text.secondary" sx={{ fontWeight: 500, lineHeight: 1.4, fontSize: "0.85rem", mb: 1 }}>
                     {item.desc}
+                  </Typography>
+                  <Typography variant="subtitle2" sx={{ fontWeight: 900, color: "primary.main", mt: "auto", fontSize: "1.1rem", letterSpacing: "-0.3px" }}>
+                    {item.stat}
                   </Typography>
                 </Card>
               </Grid>
